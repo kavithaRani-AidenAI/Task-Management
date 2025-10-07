@@ -1,0 +1,21 @@
+import AdminDashboard from "./Pages/AdminDashboard";
+import AdminLogin from "./Pages/AdminLogin";
+import EmployeeDashboard from "./Pages/EmployeeDashboard";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import TaskAssignForm from "./Pages/TaskAssignForm";
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        {/* Admin login page */}
+       <Route path="/" element={<AdminLogin />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+         <Route path="/employee-dashboard/:empCode" element={<EmployeeDashboard />} />       
+          <Route path="/assign-task" element={<TaskAssignForm />} />
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;

@@ -1,0 +1,315 @@
+/* Form container */
+.form-containers {
+  /* max-width: 700px; */
+  margin: 30px auto;
+  padding: 25px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  font-family: Arial, sans-serif;
+}
+
+/* Heading */
+/* Style h3 and add horizontal line below */
+.form-container h3 {
+  position: relative;
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  color: #333;
+}
+
+.form-container h3::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #ac5454;
+    border-radius: 2px;
+
+}
+
+/* Form rows (two columns per row) */
+.form-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 15px;
+}
+
+/* Single field (label + input/select/textarea) */
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label{
+  margin-left: 161px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #444;
+} 
+.label-style{
+  margin-left: 180px;
+}
+
+
+/* Inputs */
+.form-group select,
+.form-group textarea {
+  margin-left: 237px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+}
+
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #007bff;
+}
+
+/* Full width (Remarks) */
+.full-width {
+  margin-bottom: 15px;
+}
+
+/* Textarea */
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Submit button */
+.form-submit {
+  text-align: center;
+  display: flex;
+  justify-content: center;  /* ✅ centers the button horizontally */
+  align-items: center;      /* ✅ centers vertically (optional) */
+  /* margin-top: -37px; */
+}
+
+.form-submit button {
+  padding: 12px 25px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.form-actions button:hover {
+  background: #0056b3;
+}
+
+/* Success popup */
+.popup {
+  margin-top: 15px;
+  padding: 12px;
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  border-radius: 6px;
+  text-align: center;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+
+
+/* tasklist */
+
+/* .task-list-container {
+  margin: 2rem auto;
+  padding: 1.5rem;
+  max-width: 1100px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+} */
+
+.task-list-container {
+    margin: 2rem 0 2rem -7rem;
+    padding: 1.5rem;
+    width: 1400px;
+    max-width: none;
+    background: #e2edf1;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.task-list-container h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 1.2rem;
+  color: #333;
+}
+
+/* Filters section */
+.task-list-container .filters {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+  flex-wrap: nowrap; /* force items to stay in one row */
+}
+
+.task-list-container .filters select,
+.task-list-container .filters input {
+  flex: 1; /* make them evenly sized */
+  min-width: 180px; /* prevent shrinking too much */
+  padding: 0.5rem 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.filters select:focus,
+.filters input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 3px rgba(0,123,255,0.4);
+}
+
+/* Table */
+.task-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.task-table thead {
+  background: #007bff;
+  color: white;
+}
+
+.task-table th,
+.task-table td {
+  padding: 0.8rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.task-table tbody tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+.task-table tbody tr:hover {
+  background: #f1f7ff;
+  transition: background 0.2s ease-in-out;
+}
+
+.task-table th:first-child,
+.task-table td:first-child {
+  border-top-left-radius: 8px;
+}
+
+.task-table th:last-child,
+.task-table td:last-child {
+  border-top-right-radius: 8px;
+}
+
+/* Empty state */
+.task-table td[colspan="7"] {
+  text-align: center;
+  color: #777;
+  padding: 1.5rem;
+  font-style: italic;
+}
+
+
+/* Delete button */
+.delete-btn {
+  background-color: #dc3545;
+  color: #fff;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #fff;
+  padding: 20px 30px;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 400px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.modal-buttons {
+ gap: 15px;
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+}
+
+.modal-buttons button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.ok-btn {
+  background-color: green;
+  color: #fff;
+}
+
+.cancel-btn {
+  background-color: red;
+  color: #fff;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #28a745; /* green for success */
+  color: #fff;
+  padding: 15px 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 1001;
+  font-size: 10px;
+  font-weight: 300;
+  text-align: center;
+  animation: fadein 0.3s, fadeout 0.3s 2.7s;
+}
+
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeout {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(20px); }
+}
