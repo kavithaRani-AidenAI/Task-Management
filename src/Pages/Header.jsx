@@ -31,14 +31,14 @@ function Header() {
     </div>
 
         {/* Navigation */}
-        <nav className="header-nav">
+        {/* <nav className="header-nav">
           <div className="nav-links">
             <Link to="/home">Home</Link>
             <Link to="/services">Services</Link>
             <Link to="/about">About</Link>
             <Link to="/contact">Contact</Link>
           </div>
-        </nav>
+        </nav> */}
 
         {/* User Section */}
         {/* <div className="user-section">

@@ -1,16 +1,21 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const { Pool } = require("pg");
+import express from "express";
+import cors from "cors";
+import bodyParser from "body-parser";
+import pg from "pg"; // PostgreSQL client
+import dotenv from "dotenv";
+import crypto from "crypto"; // ✅ add this at the top of server.js if not already
+
+dotenv.config(); // Load environment variables from .env
+
+const { Pool } = pg;
 
 const app = express();
-const port = 5000;
+const PORT = process.env.PORT || 5000;
 
+// Middleware
 app.use(cors());
 app.use(bodyParser.json());
-// Temporary in-memory storage (replace with DB later)
-let employees = [];
-let tasks = [];
+
 
 
 const pool = new Pool({
@@ -19,53 +24,182 @@ const pool = new Pool({
     })
 
 
-// app.post('/admin/login', async (req, res) => {
+
+
+// Utility: Hash password with SHA-256
+const hashPassword = (password) =>
+  crypto.createHash("sha256").update(password).digest("hex");
+
+// ======================================
+// 🔐 LOGIN (admin only)
+// ======================================
+
+
+// app.post("/api/login", async (req, res) => {
 //   const { username, password } = req.body;
 
 //   try {
-//     const result = await pool.query(
-//       'SELECT * FROM admin WHERE username=$1 AND password=$2',
-//       [username, password]
-//     );
-
-//     if (result.rows.length > 0) {
-//       res.json({ success: true, admin: result.rows[0] });
-//     } else {
-//       res.status(401).json({ success: false, message: 'Invalid admin credentials' });
+//     if (!username || !password) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Username and password are required" });
 //     }
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ success: false, message: 'Server error' });
-//   }
-// });
 
-// Admin Stats route
-// app.get("/stats", async (req, res) => {
-//   try {
-//     const result = await pool.query(
-//       "SELECT COUNT(*) as total, COUNT(CASE WHEN status = 'Pending' THEN 1 END) as pending FROM tasks"
+//     // ✅ Validate username pattern (must start with DS and followed by 3 digits)
+//     const usernamePattern = /^DS\d{3}$/;
+//     if (!usernamePattern.test(username)) {
+//       return res
+//         .status(400)
+//         .json({
+//           success: false,
+//           message: "Username must start with 'DS' followed by 3 digits (e.g., DS001)",
+//         });
+//     }
+
+//     // ✅ First, check in the admin table
+//     const adminResult = await pool.query(
+//       "SELECT id, username, password, created_at FROM admin WHERE username = $1",
+//       [username]
 //     );
-//     const stats = {
-//       totalEmployees: employees.length,
-//       totalTasks: parseInt(result.rows[0].total || 0, 10),
-//       pendingTasks: parseInt(result.rows[0].pending || 0, 10)
-//     };
-//     res.json(stats);
+
+//     if (adminResult.rows.length > 0) {
+//       const admin = adminResult.rows[0];
+
+//       // Compare hashed passwords (frontend sends SHA-256 hashed password)
+//       if (admin.password !== password) {
+//         return res
+//           .status(400)
+//           .json({ success: false, message: "Invalid password" });
+//       }
+
+//       // ✅ Successful admin login
+//       return res.json({
+//         success: true,
+//         role: "admin",
+//         user: {
+//           id: admin.id,
+//           username: admin.username,
+//           created_at: admin.created_at,
+//         },
+//       });
+//     }
+
+//     // ✅ If not admin, check in emp_details table
+//     const empResult = await pool.query(
+//       "SELECT emp_code, name, department, role, password FROM emp_details WHERE emp_code = $1",
+//       [username]
+//     );
+
+//     if (empResult.rows.length === 0) {
+//       return res.status(400).json({ success: false, message: "User not found" });
+//     }
+
+//     const user = empResult.rows[0];
+
+//     // ✅ Compare hashed password (frontend also sends SHA256 hash)
+//     if (user.password !== password) {
+//       return res.status(400).json({ success: false, message: "Invalid password" });
+//     }
+
+//     // ✅ Successful employee login
+//     return res.json({
+//       success: true,
+//       role: user.role, // 'employee' or 'admin' if exists
+//       user: {
+//         emp_code: user.emp_code,
+//         name: user.name,
+//         department: user.department,
+//       },
+//     });
 //   } catch (err) {
-//     console.error('Stats error:', err);
-//     res.status(500).json({ error: err.message });
+//     console.error("Login error:", err);
+//     res.status(500).json({ success: false, message: "Server error" });
 //   }
 // });
 
 
-// Employee Login
-// app.post("/api/employee/login", (req, res) => {
-//   const { empId, password } = req.body;
-//   const employee = employees.find(e => e.id === empId && e.password === password);
-//   if (employee) {
-//     res.json({ success: true, employee });
-//   } else {
-//     res.status(401).json({ success: false, message: "Invalid employee credentials" });
+// app.post("/api/login", async (req, res) => {
+//   const { username, password } = req.body;
+
+//   try {
+//     if (!username || !password) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Username and password are required",
+//       });
+//     }
+
+//     // ✅ Validate username pattern (must start with DS and followed by 3 digits)
+//     const usernamePattern = /^DS\d{3}$/;
+//     if (!usernamePattern.test(username)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Username must start with 'DS' followed by 3 digits (e.g., DS001)",
+//       });
+//     }
+
+//     // ✅ First, check in the admin table
+//     const adminResult = await pool.query(
+//       "SELECT id, username, password, created_at FROM admin WHERE username = $1",
+//       [username]
+//     );
+
+//     if (adminResult.rows.length > 0) {
+//       const admin = adminResult.rows[0];
+
+//       // Compare hashed passwords (frontend sends SHA-256 hashed password)
+//       if (admin.password !== password) {
+//         return res.status(400).json({ success: false, message: "Invalid password" });
+//       }
+
+//       // ✅ Successful admin login
+//       return res.json({
+//         success: true,
+//         role: "admin",
+//         user: {
+//           id: admin.id,
+//           username: admin.username,
+//           created_at: admin.created_at,
+//         },
+//       });
+//     }
+
+//     // ✅ If not admin, check in emp_details table
+//     const empResult = await pool.query(
+//       "SELECT emp_code, name, department, role, password FROM emp_details WHERE emp_code = $1",
+//       [username]
+//     );
+
+//     if (empResult.rows.length === 0) {
+//       return res.status(400).json({ success: false, message: "User not found" });
+//     }
+
+//     const user = empResult.rows[0];
+
+//     // ✅ Compare hashed password (frontend also sends SHA256 hash)
+//     if (user.password !== password) {
+//       return res.status(400).json({ success: false, message: "Invalid password" });
+//     }
+
+//     // ✅ Determine role dynamically: any emp_code starting with "DS" is employee
+//     let userRole = "employee"; // default role for employees
+//     if (user.role && user.role.toLowerCase() === "admin") {
+//       userRole = "admin"; // in case role column says admin
+//     }
+
+//     // ✅ Successful employee login
+//     return res.json({
+//       success: true,
+//       role: userRole,
+//       user: {
+//         emp_code: user.emp_code,
+//         name: user.name,
+//         department: user.department,
+//       },
+//     });
+//   } catch (err) {
+//     console.error("Login error:", err);
+//     res.status(500).json({ success: false, message: "Server error" });
 //   }
 // });
 
@@ -73,32 +207,65 @@ app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    // Find employee/admin by emp_code
-    const result = await pool.query(
-      "SELECT emp_code, name, department, role, password FROM emp_details WHERE emp_code = $1",
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Username and password are required",
+      });
+    }
+
+    // Validate username pattern
+    const usernamePattern = /^DS\d{3}$/;
+    if (!usernamePattern.test(username)) {
+      return res.status(400).json({
+        success: false,
+        message: "Username must start with 'DS' followed by 3 digits (e.g., DS001)",
+      });
+    }
+
+    // ✅ Step 1: Check username/password in admin table
+    const adminResult = await pool.query(
+      "SELECT id, username, password, created_at FROM admin WHERE username = $1",
       [username]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(400).json({ success: false, message: "User not found" });
+    if (adminResult.rows.length === 0) {
+      return res.status(400).json({ success: false, message: "User not found in admin table" });
     }
 
-    const user = result.rows[0];
+    const adminUser = adminResult.rows[0];
 
-    // ✅ Compare plain password
-    if (user.password !== password) {
+    // Compare password
+    if (adminUser.password !== password) {
       return res.status(400).json({ success: false, message: "Invalid password" });
     }
 
+    // ✅ Step 2: Fetch role from emp_details table
+    const empResult = await pool.query(
+      "SELECT emp_code, role, name, department FROM emp_details WHERE emp_code = $1",
+      [username]
+    );
 
-    // Return role-based login response
+    if (empResult.rows.length === 0) {
+      return res.status(400).json({ success: false, message: "User not found in emp_details table" });
+    }
+
+    const empUser = empResult.rows[0];
+
+    // Sanitize role
+    let userRole = empUser.role?.trim().toLowerCase();
+    if (userRole !== "admin") userRole = "employee"; // fallback
+
+    // ✅ Successful login response
     return res.json({
       success: true,
-      role: user.role,  // 'admin' or 'employee'
+      role: userRole,
       user: {
-        emp_code: user.emp_code,
-        name: user.name,
-        department: user.department,
+        id: adminUser.id,
+        username: adminUser.username,
+        name: empUser.name,
+        department: empUser.department,
+        created_at: adminUser.created_at,
       },
     });
   } catch (err) {
@@ -106,6 +273,8 @@ app.post("/api/login", async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
+
 
 
 
@@ -351,6 +520,6 @@ app.delete("/api/tasks/:id", async (req, res) => {
 
 
 //app.listen(5000, () => console.log("Server running on http://localhost:5000"));
-app.listen(port, () => {
-  console.log(`🚀 Server running on http://localhost:${port}`);
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
