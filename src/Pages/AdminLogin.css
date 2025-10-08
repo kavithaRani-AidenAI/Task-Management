@@ -101,9 +101,9 @@
             font-size: 16px;
             font-weight: 600;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            margin-right: 10px;
+            /* margin-right: 10px; */
             margin-bottom: 10px;
-            margin-left: 150px;
+            margin-left:222px;
         }
         
         .btn:hover {

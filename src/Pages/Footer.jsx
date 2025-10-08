@@ -3,7 +3,7 @@ import React from "react";
 const Footer = () => {
   return (
     <footer className="footers">
-      <p>© {new Date().getFullYear()} Employee Task Management System | All Rights Reserved</p>
+      <p>© {new Date().getFullYear()} Dreamstep software innovations pvt ltd | All Rights Reserved</p>
     </footer>
   );
 };
