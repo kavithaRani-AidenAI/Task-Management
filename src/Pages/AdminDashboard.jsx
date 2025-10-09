@@ -6,11 +6,10 @@ import TaskAssignForm from "./TaskAssignForm";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-// src/pages/AdminDashboard.jsx
-
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
+  // Dashboard stats
   const [stats, setStats] = useState({
     totalEmployees: 0,
     totalTasks: 0,
@@ -29,63 +28,81 @@ export default function AdminDashboard() {
     position: "",
   });
 
-  // Fetch employees and normalize emp_code
+  // -----------------------------
+  // Fetch Employees
+  // -----------------------------
   const fetchEmployees = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/emp_details");
-      const normalized = res.data.map(emp => ({
-        emp_code: emp.emp_code ?? emp.id ?? Math.random(),
-        name: emp.name ?? "",
-        email: emp.email ?? "",
-        department: emp.department ?? "",
-        position: emp.position ?? "",
-        tasks_assigned: emp.tasks_assigned ?? 0,
-        tasks_completed: emp.tasks_completed ?? 0,
-        id: emp.id ?? emp.emp_code ?? Math.random()
-      }));
+      const normalized = res.data.map(emp => {
+        const uniqueId = emp.id ?? emp.emp_code ?? crypto.randomUUID();
+        return {
+          emp_code: emp.emp_code ?? uniqueId,
+          name: emp.name ?? "",
+          email: emp.email ?? "",
+          department: emp.department ?? "",
+          position: emp.position ?? "",
+          tasks_assigned: emp.tasks_assigned ?? 0,
+          tasks_completed: emp.tasks_completed ?? 0,
+          id: uniqueId,
+        };
+      });
       setEmployees(normalized);
     } catch (err) {
       console.error("Error fetching employees:", err);
     }
   };
 
-  // Fetch dashboard stats
+  // -----------------------------
+  // Fetch Dashboard Stats
+  // -----------------------------
   const fetchStats = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/dashboard-stats");
-      setStats(res.data ?? {});
+      const data = res.data ?? {};
+      setStats({
+        totalEmployees: data.totalEmployees ?? data.total_employees ?? 0,
+        totalTasks: data.totalTasks ?? data.total_tasks ?? 0,
+        pendingTasks: data.pendingTasks ?? data.pending_tasks ?? 0,
+      });
     } catch (err) {
       console.error("Error fetching stats:", err);
     }
   };
+
+  // -----------------------------
+  // Handle Back Button / Exit
+  // -----------------------------
   useEffect(() => {
     const handlePopState = () => {
       const confirmExit = window.confirm("Are you sure you want to exit?");
       if (confirmExit) {
         localStorage.clear();
-        navigate("/", { replace: true }); // go to login
+        navigate("/", { replace: true });
       } else {
-        // Stay on dashboard, keep back button active
         window.history.pushState(null, "", window.location.href);
       }
     };
-  
-    // Initial push to ensure back button triggers popstate
+
     window.history.pushState(null, "", window.location.href);
     window.addEventListener("popstate", handlePopState);
-  
+
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
   }, [navigate]);
-  
 
+  // -----------------------------
+  // Initial Fetch
+  // -----------------------------
   useEffect(() => {
     fetchEmployees();
     fetchStats();
   }, []);
 
-  // Form handling
+  // -----------------------------
+  // Form Handling
+  // -----------------------------
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -94,7 +111,6 @@ export default function AdminDashboard() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Validate required fields
     if (!form.name || !form.email || !form.department || !form.position) {
       alert("Please fill all fields");
       setIsSubmitting(false);
@@ -104,20 +120,21 @@ export default function AdminDashboard() {
     try {
       const res = await axios.post("http://localhost:5000/api/emp_details", form);
       const newEmp = {
-        emp_code: res.data.emp_code ?? res.data.id ?? Math.random(),
+        emp_code: res.data.emp_code ?? res.data.id ?? crypto.randomUUID(),
         name: res.data.name ?? "",
         email: res.data.email ?? "",
         department: res.data.department ?? "",
         position: res.data.position ?? "",
         tasks_assigned: res.data.tasks_assigned ?? 0,
         tasks_completed: res.data.tasks_completed ?? 0,
-        id: res.data.id ?? res.data.emp_code ?? Math.random()
+        id: res.data.id ?? res.data.emp_code ?? crypto.randomUUID(),
       };
       setEmployees(prev => [...prev, newEmp]);
       setForm({ name: "", email: "", department: "", position: "" });
       setActivePage("employees");
       setSuccessMessage("Employee added successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);
+      fetchStats(); // update dashboard stats
     } catch (err) {
       console.error("Error adding employee:", err);
     } finally {
@@ -125,24 +142,33 @@ export default function AdminDashboard() {
     }
   };
 
+  // -----------------------------
+  // Delete Employee
+  // -----------------------------
   const deleteEmployee = async (id) => {
     try {
       await axios.delete(`http://localhost:5000/api/emp_details/${id}`);
       fetchEmployees();
+      fetchStats(); // update stats after deletion
     } catch (err) {
       console.error("Error deleting employee:", err);
     }
   };
 
+  // -----------------------------
+  // Logout
+  // -----------------------------
   const logout = () => {
     const confirmExit = window.confirm("Are you sure you want to exit?");
     if (confirmExit) {
-    localStorage.removeItem('admin');//clear session
-    navigate('/',{replace: true});//go to login
+      localStorage.removeItem('admin');
+      navigate('/', { replace: true });
     }
   };
 
-  // Page switches
+  // -----------------------------
+  // Page Switches
+  // -----------------------------
   const showDashboard = () => setActivePage("dashboard");
   const showEmployees = () => { fetchEmployees(); setActivePage("employees"); };
   const showTasks = () => setActivePage("tasks");
@@ -168,15 +194,15 @@ export default function AdminDashboard() {
             <div className="stats-container">
               <div className="stat-card">
                 <div className="stat-title">Total Employees</div>
-                <div className="stat-value">{stats.totalEmployees ?? 0}</div>
+                <div className="stat-value">{stats.totalEmployees}</div>
               </div>
               <div className="stat-card">
                 <div className="stat-title">Total Tasks</div>
-                <div className="stat-value">{stats.totalTasks ?? 0}</div>
+                <div className="stat-value">{stats.totalTasks}</div>
               </div>
               <div className="stat-card">
                 <div className="stat-title">Pending Tasks</div>
-                <div className="stat-value">{stats.pendingTasks ?? 0}</div>
+                <div className="stat-value">{stats.pendingTasks}</div>
               </div>
             </div>
           </div>
@@ -247,14 +273,14 @@ export default function AdminDashboard() {
               </thead>
               <tbody>
                 {employees.map(emp => (
-                  <tr key={emp.id || emp.emp_code || Math.random()}>
-                    <td>{emp.emp_code ?? "N/A"}</td>
-                    <td>{emp.name ?? "N/A"}</td>
-                    <td>{emp.email ?? "N/A"}</td>
-                    <td>{emp.department ?? "N/A"}</td>
-                    <td>{emp.position ?? "N/A"}</td>
-                    <td>{emp.tasks_assigned ?? 0}</td>
-                    <td>{emp.tasks_completed ?? 0}</td>
+                  <tr key={emp.id}>
+                    <td>{emp.emp_code}</td>
+                    <td>{emp.name}</td>
+                    <td>{emp.email}</td>
+                    <td>{emp.department}</td>
+                    <td>{emp.position}</td>
+                    <td>{emp.tasks_assigned}</td>
+                    <td>{emp.tasks_completed}</td>
                     <td>
                       <button onClick={() => deleteEmployee(emp.id)}>Delete</button>
                     </td>
