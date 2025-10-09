@@ -212,6 +212,20 @@ function EmployeeDashboard() {
     return weeks;
   };
 
+const handleStatusChange = async (taskId, newStatus) => {
+  console.log("Updating task:", taskId, "to status:", newStatus); // ✅ Debug line
+  try {
+    const res = await axios.put(`http://localhost:5000/api/tasks/${taskId}/status`, {
+      status: newStatus,
+    });
+    console.log("Status update success:", res.data);
+    fetchTasks();
+  } catch (err) {
+    console.error("Error updating status:", err);
+    alert("Failed to update status. Try again.");
+  }
+};
+
   return (
     <>
       <DashboardHeader currentUser={emp} />
@@ -351,7 +365,17 @@ function EmployeeDashboard() {
                     <td>{task.task_details}</td>
                     <td>{new Date(task.created_at).toLocaleString()}</td>
                     <td>{task.assigned_from}</td>
-                    <td>{task.status}</td>
+                    {/* <td>{task.status}</td> */}
+                  <td>
+                    <select
+                      value={task.status || "Pending"}
+                      onChange={(e) => handleStatusChange(task.task_id, e.target.value)}
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Completed">Completed</option>
+                    </select>
+                  </td>
                     <td>
                       <button className="delete-btn" onClick={() => handleDeleteClick(task)}>
                         Delete

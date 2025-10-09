@@ -296,6 +296,37 @@ app.get("/api/dashboard-stats", async (req, res) => {
   }
 });
 
+
+
+app.put("/api/tasks/:task_id/status", async (req, res) => {
+  const { task_id } = req.params;
+  const { status } = req.body;
+
+  console.log("Received task_id:", task_id, "status:", status); // ✅ Debug line
+
+  if (!status) {
+    return res.status(400).json({ success: false, message: "Status is required" });
+  }
+
+  try {
+    const result = await pool.query(
+      "UPDATE task_details SET status = $1 WHERE task_id = $2 RETURNING *",
+      [status, task_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: "Task not found" });
+    }
+
+    res.json({ success: true, message: "Status updated successfully", task: result.rows[0] });
+  } catch (err) {
+    console.error("Error updating task status:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+
 // Test route
 app.get("/", (req, res) => {
   res.send("Task API is running...");

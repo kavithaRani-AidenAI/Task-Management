@@ -342,6 +342,23 @@ textarea {
 
 
 /* Table Section */
+
+td select {
+    margin-left: 0px;
+    width: 79px;
+    padding: 2px 0px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+td select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 3px rgba(0, 123, 255, 0.4);
+}
+
 .table-section table {
   width: 100%;
   border-collapse: collapse;
