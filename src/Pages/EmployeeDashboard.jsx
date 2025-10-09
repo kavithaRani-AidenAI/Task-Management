@@ -8,7 +8,7 @@ import DashboardHeader from "./DashboardHeader";
 
 function EmployeeDashboard() {
   //const currentYear = new Date().getFullYear();
-   const { empCode } = useParams(); // <-- DS02 will come here
+  const { empCode } = useParams(); // <-- DS02 will come here
   const API_BASE = "http://localhost:5000/api";
   //const emp = JSON.parse(localStorage.getItem("employee")); // logged-in employee
 
@@ -63,49 +63,49 @@ function EmployeeDashboard() {
   // };
 
 
-  // ✅ Fetch tasks for specific employee
 const fetchTasks = async () => {
   try {
     const res = await axios.get(`${API_BASE}/tasks`);
-    const allTasks = res.data;
+    const allTasks = res.data || [];
 
-    const employee = JSON.parse(localStorage.getItem("employee"));
-    const admin = JSON.parse(localStorage.getItem("admin"));
+    const emp = JSON.parse(localStorage.getItem("employee")) || { emp_code: empCode };
+    const adm = JSON.parse(localStorage.getItem("admin"));
 
-    // employee can see tasks assigned to them
-    if (employee) {
-      const filtered = allTasks.filter(
-        (task) => task.emp_code === employee.emp_code || task.assigned_from === employee.emp_code
+    let filtered = [];
+
+    if (emp && emp.emp_code) {
+      filtered = allTasks.filter(
+        (task) =>
+          task.emp_code?.toUpperCase() === emp.emp_code.toUpperCase() ||
+          task.assigned_from?.toUpperCase() === emp.emp_code.toUpperCase()
       );
-      setTasks(filtered);
-      setFilteredTasks(filtered);
-    }
-    // admin can see all tasks they created or assigned
-    else if (admin) {
-      const filtered = allTasks.filter(
-        (task) => task.assigned_from === admin.emp_code
+    } else if (adm && adm.username) {
+      filtered = allTasks.filter(
+        (task) => task.assigned_from?.toUpperCase() === adm.username.toUpperCase()
       );
-      setTasks(filtered);
-      setFilteredTasks(filtered);
-    } else {
-      setTasks([]);
-      setFilteredTasks([]);
     }
+
+    setTasks(filtered);
+    setFilteredTasks(filtered);
   } catch (err) {
     console.error("Error fetching tasks:", err);
   }
 };
 
-     const fetchProjects = async () => {
+
+
+const fetchProjects = async () => {
       try {
         const res = await axios.get("http://localhost:5000/api/projects");
         setProjects(res.data);
       } catch (err) {
         console.error("Error fetching projects:", err);
       }
-    };
+};
 
-  const handleDeleteClick = (task) => {
+
+
+const handleDeleteClick = (task) => {
   setTaskToDelete(task);
   setShowPopup(true);
 };
@@ -121,67 +121,31 @@ const fetchTasks = async () => {
     if (empCode) fetchTasks();
     
   }, [empCode]);
-
     const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    
+    setForm({ ...form, [e.target.name]: e.target.value });   
   };
 
-  useEffect(() => {
+ useEffect(() => {
+  if (!empCode) return;
+
   const fetchEmployeeDetails = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/employees/${empCode}`); // your backend route
+      const res = await axios.get(`${API_BASE}/employees/${empCode}`);
       setEmp(res.data); // full employee object
     } catch (err) {
       console.error("Error fetching employee details:", err);
     }
-  };
-
+  }
   if (empCode) fetchEmployeeDetails();
 }, [empCode]);
 
-  // Add new task assigned to this employee
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   if (!taskInput) return;
-
-  //   const admin = JSON.parse(localStorage.getItem("admin")); // Who assigns
-  //   const payload = {
-  //     emp_code: empCode,
-  //     project,
-  //     module,
-  //     submodule,
-  //     task_details: taskInput,
-  //     assigned_from: admin?.emp_code || "Admin",
-  //     status: "Pending",
-  //     date: selectedDate,
-  //     created_at: new Date().toISOString()
-  //   };
-
-  //   try {
-  //     await axios.post(`${API_BASE}/tasks`, payload);
-  //     setSuccessMessage("Task submitted successfully!");
-  //     setSuccessColor("green");
-  //     setShowSuccessPopup(true);
-  //     setTimeout(() => setShowSuccessPopup(false), 2000);
-
-  //     setTaskInput("");
-  //     setProject("");
-  //     setModule("");
-  //     setSubmodule("");
-  //     fetchTasks();
-  //   } catch (err) {
-  //     console.error(err);
-  //     alert("Error saving task!");
-  //   }
-  // };
-
-  const handleSubmit = async (e) => {
+  
+const handleSubmit = async (e) => {
     e.preventDefault();
    const admin = JSON.parse(localStorage.getItem("admin"));
    const employee = JSON.parse(localStorage.getItem("employee"));
-     const assignedFrom = admin?.emp_code || employee?.emp_code || "System";
- const payload = {
+     const assignedFrom = admin?.emp_code || employee?.emp_code || "Self";
+    const payload = {
     emp_code: empCode,
     project: form.project,
     module: form.module,
@@ -456,37 +420,34 @@ const fetchTasks = async () => {
       </td>
     </tr>
   ) : (
-    filteredTasks.map((task, index) => {
-      const employee = JSON.parse(localStorage.getItem("employee"));
-      const isSelfAssigned = task.assigned_from === employee?.emp_code; // ✅ defined inside map
-
+  filteredTasks.map((task, index) => {
+    const employee = JSON.parse(localStorage.getItem("employee"));
+    const isSelfAssigned = task.assigned_from?.includes(employee?.emp_code);
       return (
         <tr key={index}>
-          <td>{task.task_id}</td>
-          <td>
-            {task.emp_name} ({task.emp_code})
-          </td>
-          <td>{task.project}</td>
-          <td>{task.module}</td>
-          <td>{task.submodule}</td>
-          <td>{task.task_details}</td>
-          <td>{new Date(task.created_at).toLocaleString()}</td>
-          <td>{task.assigned_from}</td>
-          <td>{task.status}</td>
-          <td>
-                      <button
-            className="delete-btn"
-            onClick={() => isSelfAssigned && handleDeleteClick(task)}
-            disabled={!isSelfAssigned}
-            style={{
-              opacity: isSelfAssigned ? 1 : 0.5,
-              cursor: isSelfAssigned ? "pointer" : "not-allowed",
-            }}
-          >
-            Delete
-          </button>
-          </td>
-        </tr>
+      <td>{task.task_id}</td>
+      <td>{task.emp_name} ({task.emp_code})</td>
+      <td>{task.project}</td>
+      <td>{task.module}</td>
+      <td>{task.submodule}</td>
+      <td>{task.task_details}</td>
+      <td>{new Date(task.created_at).toLocaleString()}</td>
+      <td>{task.assigned_from}</td>
+      <td>{task.status}</td>
+      <td>
+        <button
+          className="delete-btn"
+          onClick={() => isSelfAssigned && handleDeleteClick(task)}
+          disabled={!isSelfAssigned} // ✅ now works for self-assigned tasks
+          style={{
+            opacity: isSelfAssigned ? 1 : 0.5,
+            cursor: isSelfAssigned ? "pointer" : "not-allowed",
+          }}
+        >
+          Delete
+        </button>
+      </td>
+    </tr>
       );
     })
   )}
