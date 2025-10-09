@@ -223,56 +223,70 @@ app.post("/api/login", async (req, res) => {
       });
     }
 
-    // ✅ Step 1: Check username/password in admin table
+    // ✅ Step 1: Verify credentials in admin table
     const adminResult = await pool.query(
-      "SELECT id, username, password, created_at FROM admin WHERE username = $1",
+      "SELECT id, username, password, role, created_at FROM admin WHERE username = $1",
       [username]
     );
 
     if (adminResult.rows.length === 0) {
-      return res.status(400).json({ success: false, message: "User not found in admin table" });
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found in admin table" });
     }
 
     const adminUser = adminResult.rows[0];
 
     // Compare password
     if (adminUser.password !== password) {
-      return res.status(400).json({ success: false, message: "Invalid password" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid password" });
     }
 
-    // ✅ Step 2: Fetch role from emp_details table
-    const empResult = await pool.query(
-      "SELECT emp_code, role, name, department FROM emp_details WHERE emp_code = $1",
-      [username]
-    );
+    // ✅ Step 2: Role-based logic
+    let userData = {
+      id: adminUser.id,
+      username: adminUser.username,
+      role: adminUser.role,
+      created_at: adminUser.created_at,
+    };
 
-    if (empResult.rows.length === 0) {
-      return res.status(400).json({ success: false, message: "User not found in emp_details table" });
-    }
+    // If employee → fetch from emp_details
+    if (adminUser.role.toLowerCase() === "employee") {
+      const empResult = await pool.query(
+        "SELECT emp_code, name, department FROM emp_details WHERE emp_code = $1",
+        [username]
+      );
 
-    const empUser = empResult.rows[0];
+      if (empResult.rows.length === 0) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Employee details not found" });
+      }
 
-    // Sanitize role
-    let userRole = empUser.role?.trim().toLowerCase();
-    if (userRole !== "admin") userRole = "employee"; // fallback
+      const empUser = empResult.rows[0];
 
-    // ✅ Successful login response
-    return res.json({
-      success: true,
-      role: userRole,
-      user: {
-        id: adminUser.id,
-        username: adminUser.username,
+      userData = {
+        ...userData,
+        emp_code: empUser.emp_code,
         name: empUser.name,
         department: empUser.department,
-        created_at: adminUser.created_at,
-      },
+      };
+    }
+
+    // ✅ Step 3: Success response
+    return res.json({
+      success: true,
+      role: adminUser.role,
+      user: userData,
     });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 
 
 
@@ -288,13 +302,13 @@ app.get("/", (req, res) => {
 });
 
 
-//ADMIN DASHBOARD ADDING EMP DETAILS API'S
 
-// Generate employee code like EMP001, EMP002
+
 async function generateEmpCode() {
   const result = await pool.query("SELECT COUNT(*) FROM emp_details");
-  const count = parseInt(result.rows[0].count) + 1;
-  return `DS${String(count).padStart(2, "0")}`;
+  const count = parseInt(result.rows[0].count, 10); // convert to number
+  const nextNumber = count + 1; // next employee number
+  return `DS${String(nextNumber).padStart(3, "0")}`; // always start from DS001
 }
 
 // Add new employee
@@ -354,23 +368,8 @@ app.get("/api/employees", async (req, res) => {
 });
 
 
-// app.get("/api/employees", async (req, res) => {
-//   try {
-//     const result = await pool.query(`
-//       SELECT 
-//         emp_code, 
-//         name, 
-//         emp_code || ' - ' || name AS display_name
-//       FROM emp_details
-//     `);
-//     res.json(result.rows); // Each row will have: emp_code, name, display_name
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send("Server error");
-//   }
-// });
 
-// ✅ Save task
+
 
 app.get("/api/projects", async (req, res) => {
   try {
@@ -398,6 +397,8 @@ app.get("/api/employees/:emp_code", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+
 
 
 // Assign Task (create new task)

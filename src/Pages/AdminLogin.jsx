@@ -11,6 +11,8 @@ export default function AdminLogin() {
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
+    const [usernameErr, setUsernameErr] = useState("");
+
   const nav = useNavigate();
 
   const validateForm = () => {
@@ -79,11 +81,75 @@ export default function AdminLogin() {
 //   }
 // }
 
+// async function submit(e) {
+//   e.preventDefault();
+//   setErr("");
+
+//   // Username validation: must start with DS followed by exactly 3 digits
+//   const usernamePattern = /^DS\d{3}$/;
+//   if (!usernamePattern.test(username)) {
+//     setErr("Username must start with 'DS' followed by 3 digits (e.g., DS001)");
+//     return;
+//   }
+
+//   if (!username || !password) {
+//     setErr("Please enter both username and password");
+//     return;
+//   }
+//  if (usernameErr) {
+//       setErr("Please enter the correct username");
+//       return;
+//     }
+//   setLoading(true);
+
+//   try {
+//     // ✅ Hash the password before sending
+//     const hashedPassword = CryptoJS.SHA256(password).toString();
+
+//     const res = await axios.post("http://localhost:5000/api/login", {
+//       username,
+//       password: hashedPassword, // send hashed password
+//     });
+
+//     if (res.data.success) {
+//       // const role = res.data.role?.toLowerCase(); // sanitize role
+//       // const user = res.data.user;
+
+//       // Store user info in localStorage
+//       // localStorage.setItem("user", JSON.stringify(user));
+//       // localStorage.setItem("role", role);
+
+//       // Navigate based on role
+//       // if (role === "admin") {
+//       //   nav("/admin-dashboard");
+//       // } else if (role === "employee") {
+//       //   nav(`/employee-dashboard/${user.emp_code}`);
+//       // } else {
+//       //   setErr("Unknown role. Please contact administrator.");
+//       // }
+//       if (res.data.role === "admin") {
+//           localStorage.setItem("admin", JSON.stringify(res.data.user));
+//           nav("/admin-dashboard");
+//         } else if (res.data.role === "employee") {
+//           localStorage.setItem("employee", JSON.stringify(res.data.user));
+//           nav(`/employee-dashboard/${res.data.user.emp_code}`);
+//         }
+//     } else {
+//       setErr(res.data.message || "Login failed");
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     setErr(error?.response?.data?.message || "Server error. Please try again.");
+//   } finally {
+//     setLoading(false);
+//   }
+// }
+
 async function submit(e) {
   e.preventDefault();
   setErr("");
 
-  // Username validation: must start with DS followed by exactly 3 digits
+  // Username validation
   const usernamePattern = /^DS\d{3}$/;
   if (!usernamePattern.test(username)) {
     setErr("Username must start with 'DS' followed by 3 digits (e.g., DS001)");
@@ -95,6 +161,11 @@ async function submit(e) {
     return;
   }
 
+  if (usernameErr) {
+    setErr("Please enter the correct username");
+    return;
+  }
+
   setLoading(true);
 
   try {
@@ -103,35 +174,56 @@ async function submit(e) {
 
     const res = await axios.post("http://localhost:5000/api/login", {
       username,
-      password: hashedPassword, // send hashed password
+      password: hashedPassword,
     });
 
-    if (res.data.success) {
-      const role = res.data.role?.toLowerCase(); // sanitize role
-      const user = res.data.user;
+    const data = res.data;
 
-      // Store user info in localStorage
-      localStorage.setItem("user", JSON.stringify(user));
+    if (data.success) {
+      const role = data.role?.toLowerCase();
+      const user = data.user;
+
+      // ✅ Store role and user data
       localStorage.setItem("role", role);
+      localStorage.setItem("user", JSON.stringify(user));
 
-      // Navigate based on role
+      // ✅ Navigate based on role
       if (role === "admin") {
+        // Admin has no emp_code — can add employees
         nav("/admin-dashboard");
       } else if (role === "employee") {
-        nav(`/employee-dashboard/${user.emp_code}`);
+        // Employee dashboard requires emp_code
+        if (user?.emp_code) {
+          nav(`/employee-dashboard/${user.emp_code}`);
+        } else {
+          setErr("Employee code not found. Contact admin.");
+        }
       } else {
         setErr("Unknown role. Please contact administrator.");
       }
     } else {
-      setErr(res.data.message || "Login failed");
+      setErr(data.message || "Login failed");
     }
   } catch (error) {
-    console.error(error);
+    console.error("Login error:", error);
     setErr(error?.response?.data?.message || "Server error. Please try again.");
   } finally {
     setLoading(false);
   }
 }
+
+
+ const handleUsernameChange = (e) => {
+    const value = e.target.value.toUpperCase(); // optional: auto-uppercase DS
+    setUsername(value);
+
+    const usernamePattern = /^DS\d{3}$/;
+    if (!usernamePattern.test(value)) {
+      setUsernameErr("Username must start with 'DS' followed by 3 digits (e.g., DS001)");
+    } else {
+      setUsernameErr("");
+    }
+  };
 
 
 
@@ -149,10 +241,11 @@ async function submit(e) {
                 <h4>Username</h4>
                 <input
                   value={username}
-                  onChange={(e) => setUsername(e.target.value.toUpperCase())}
+                   onChange={handleUsernameChange}
                   placeholder="Enter Emp Id"
                   required
                 />
+                {usernameErr && <p style={{ color: "red", marginTop: "2px" }}>{usernameErr}</p>}
               </div>
               <div className="form-group">
                 <h4>Password</h4>
