@@ -8,6 +8,7 @@ import pg from "pg";
 dotenv.config(); // Load environment variables from .env
 
 const { Pool } = pg;
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
