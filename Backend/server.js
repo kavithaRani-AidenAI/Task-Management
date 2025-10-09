@@ -1,9 +1,9 @@
-import express from "express";
-import cors from "cors";
 import bodyParser from "body-parser";
-import pg from "pg"; // PostgreSQL client
+import cors from "cors";
+import crypto from "crypto";
 import dotenv from "dotenv";
-import crypto from "crypto"; // ✅ add this at the top of server.js if not already
+import express from "express";
+import pg from "pg";
 
 dotenv.config(); // Load environment variables from .env
 
@@ -31,7 +31,7 @@ const hashPassword = (password) =>
   crypto.createHash("sha256").update(password).digest("hex");
 
 // ======================================
-// 🔐 LOGIN (admin only)
+//  LOGIN (admin only)
 // ======================================
 
 
