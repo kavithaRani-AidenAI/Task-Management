@@ -198,11 +198,16 @@ async function submit(e) {
 
       // ✅ Store role and user data
       localStorage.setItem("role", role);
-      localStorage.setItem("user", JSON.stringify(user));
+      //localStorage.setItem("user", JSON.stringify(user));
 
       // ✅ Navigate based on role
-      if (role === "admin") {
-        // Admin has no emp_code — can add employees
+if (role === "admin") {
+        // ✅ Store admin separately for TaskAssignForm
+        localStorage.setItem("admin", JSON.stringify({
+          emp_code: user.emp_code, // ensure backend returns emp_code
+          name: user.name,
+          // add other fields if needed
+        }));
         nav("/admin-dashboard");
       } else if (role === "employee") {
         // Employee dashboard requires emp_code
