@@ -267,7 +267,11 @@
   border: 1px solid #ccc;
   border-radius: 6px;
   font-size: 14px;
-  outline: none;}
+  outline: none;
+  cursor: pointer;
+  z-index: 10;
+  position: relative;
+}
 
 .style{
       margin-left:60px;
