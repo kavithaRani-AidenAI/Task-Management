@@ -2,9 +2,10 @@ import "./AdminLogin.css";
 import CryptoJS from "crypto-js";
 import Footer from "./Footer";
 import Header from "./Header";
-import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+
 
 export default function AdminLogin() {
   const [username, setUsername] = useState("");
@@ -14,6 +15,18 @@ export default function AdminLogin() {
     const [usernameErr, setUsernameErr] = useState("");
 
   const nav = useNavigate();
+  // ✅ Disable forward navigation when on the login page
+  useEffect(() => {
+    window.history.pushState(null, "", window.location.href);
+    const handlePopState = () => {
+      window.history.pushState(null, "", window.location.href);
+    };
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
 
   const validateForm = () => {
     const usernameRegex = /^DS\d{3}$/;

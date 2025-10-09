@@ -58,6 +58,27 @@ export default function AdminDashboard() {
       console.error("Error fetching stats:", err);
     }
   };
+  useEffect(() => {
+    const handlePopState = () => {
+      const confirmExit = window.confirm("Are you sure you want to exit?");
+      if (confirmExit) {
+        localStorage.clear();
+        navigate("/", { replace: true }); // go to login
+      } else {
+        // Stay on dashboard, keep back button active
+        window.history.pushState(null, "", window.location.href);
+      }
+    };
+  
+    // Initial push to ensure back button triggers popstate
+    window.history.pushState(null, "", window.location.href);
+    window.addEventListener("popstate", handlePopState);
+  
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [navigate]);
+  
 
   useEffect(() => {
     fetchEmployees();
@@ -114,8 +135,11 @@ export default function AdminDashboard() {
   };
 
   const logout = () => {
-    localStorage.removeItem('admin');
-    navigate('/');
+    const confirmExit = window.confirm("Are you sure you want to exit?");
+    if (confirmExit) {
+    localStorage.removeItem('admin');//clear session
+    navigate('/',{replace: true});//go to login
+    }
   };
 
   // Page switches

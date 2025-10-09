@@ -3,11 +3,13 @@ import "./EmployeeDashboard.css";
 import Footer from "./Footer";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
 import DashboardHeader from "./DashboardHeader";
+import { useParams, useNavigate } from "react-router-dom";
+
 
 function EmployeeDashboard() {
   //const currentYear = new Date().getFullYear();
+  const navigate = useNavigate();
   const { empCode } = useParams(); // <-- DS02 will come here
   const API_BASE = "http://localhost:5000/api";
   //const emp = JSON.parse(localStorage.getItem("employee")); // logged-in employee
@@ -61,7 +63,27 @@ function EmployeeDashboard() {
   //     console.error("Error fetching tasks:", err);
   //   }
   // };
+  // 🧭 Back Button Confirmation
+useEffect(() => {
+  const handlePopState = () => {
+    const confirmExit = window.confirm("Are you sure you want to exit?");
+    if (confirmExit) {
+      localStorage.clear();
+      navigate("/", { replace: true }); // go to login
+    } else {
+      // Stay on dashboard, keep back button active
+      window.history.pushState(null, "", window.location.href);
+    }
+  };
 
+  // Initial push to ensure back button triggers popstate
+  window.history.pushState(null, "", window.location.href);
+  window.addEventListener("popstate", handlePopState);
+
+  return () => {
+    window.removeEventListener("popstate", handlePopState);
+  };
+}, [navigate]);
 
 const fetchTasks = async () => {
   try {
@@ -92,8 +114,6 @@ const fetchTasks = async () => {
   }
 };
 
-
-
 const fetchProjects = async () => {
       try {
         const res = await axios.get("http://localhost:5000/api/projects");
@@ -102,8 +122,6 @@ const fetchProjects = async () => {
         console.error("Error fetching projects:", err);
       }
 };
-
-
 
 const handleDeleteClick = (task) => {
   setTaskToDelete(task);
@@ -114,8 +132,6 @@ const handleDeleteClick = (task) => {
     useEffect(() => {
       fetchProjects();
     }, []);
-
-
 
   useEffect(() => {
     if (empCode) fetchTasks();
@@ -314,16 +330,13 @@ const handleSubmit = async (e) => {
       <form className="task-form" onSubmit={handleSubmit}>
         {/* Row 1: Employee + Project */}
         <div className="form-row">
-
-
           <div className="form-group">
             <h5 className="style">Project:</h5>
             <select
               name="project"
               value={form.project}
               onChange={handleChange}
-              required
-            >
+              required          >
               <option value="">-- Select Project --</option>
               {projects.map((proj) => (
           <option key={proj.project_id} value={proj.project_name}>

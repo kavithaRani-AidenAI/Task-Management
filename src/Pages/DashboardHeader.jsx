@@ -6,11 +6,13 @@ export default function DashboardHeader({ currentUser }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Clear localStorage
-    localStorage.removeItem("employee");
-    localStorage.removeItem("admin");
-    navigate("/"); // redirect to login page
-  };
+  const confirmExit = window.confirm("Are you sure you want to exit?");
+  if (confirmExit) {
+    localStorage.clear(); // clear session
+    navigate("/", { replace: true }); // go to login
+  }
+  // else do nothing, stay on dashboard
+};
 
   return (
     <header className="header-container">
