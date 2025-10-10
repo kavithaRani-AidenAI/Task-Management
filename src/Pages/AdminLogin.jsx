@@ -38,12 +38,12 @@ export default function AdminLogin() {
       return false;
     }
     if (!usernameRegex.test(username)) {
-      setErr('Username must start with "DS" followed by exactly 3 digits (e.g., DS001)');
+      setErr("Username must start with DS");
       return false;
     }
     if (!passwordRegex.test(password)) {
       setErr(
-        "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character"
+        "Password Invalid"
       );
       return false;
     }
@@ -165,7 +165,7 @@ async function submit(e) {
   // Username validation
   const usernamePattern = /^DS\d{3}$/;
   if (!usernamePattern.test(username)) {
-    setErr("Username must start with 'DS' followed by 3 digits (e.g., DS001)");
+    setErr("Username must start with 'DS' ");
     return;
   }
 
