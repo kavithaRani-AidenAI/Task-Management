@@ -176,7 +176,7 @@ export default function AdminDashboard() {
   const showTasks = () => setActivePage("tasks");
 
   // -----------------------------
-  // Excel Export for Employees
+  // Excel Export
   // -----------------------------
   const exportToExcel = () => {
     if (employees.length === 0) {

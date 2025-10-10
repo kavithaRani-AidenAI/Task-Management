@@ -164,7 +164,7 @@ async function submit(e) {
   // Username validation
   const usernamePattern = /^DS\d{3}$/;
   if (!usernamePattern.test(username)) {
-    setErr("Username must start with 'DS' followed by 3 digits (e.g., DS001)");
+    setErr("Username must start with 'DS' ");
     return;
   }
 
