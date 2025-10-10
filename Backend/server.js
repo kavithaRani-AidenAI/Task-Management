@@ -29,6 +29,66 @@ const hashPassword = (password) =>
 // ======================================
 // LOGIN
 // ======================================
+// app.post("/api/login", async (req, res) => {
+//   const { username, password } = req.body;
+
+//   try {
+//     if (!username || !password) {
+//       return res.status(400).json({ success: false, message: "Username and password are required" });
+//     }
+
+//     const usernamePattern = /^DS\d{3}$/;
+//     if (!usernamePattern.test(username)) {
+//       return res.status(400).json({ success: false, message: "Username must start with 'DS' followed by 3 digits" });
+//     }
+
+//     // Check admin table
+//     const adminResult = await pool.query(
+//       "SELECT id, username, password, role, created_at FROM admin WHERE username = $1",
+//       [username]
+//     );
+
+//     if (adminResult.rows.length === 0) {
+//       return res.status(400).json({ success: false, message: "User not found in admin table" });
+//     }
+
+//     const adminUser = adminResult.rows[0];
+
+//     if (adminUser.password !== password) {
+//       return res.status(400).json({ success: false, message: "Invalid password" });
+//     }
+
+//      // If employee role, fetch details
+//     if (adminUser.role.toLowerCase() === "employee") {
+//       const empResult = await pool.query(
+//         "SELECT emp_code, name, department FROM emp_details WHERE emp_code = $1",
+//         [username]
+//       );
+
+//       if (empResult.rows.length > 0) {
+//         const empUser = empResult.rows[0];
+//         userData = { ...userData, emp_code: empUser.emp_code, name: empUser.name, department: empUser.department };
+//       }
+//     }
+
+
+//     let userData = {
+//       id: adminUser.id,
+//       emp_code: adminUser.username, // 👈 Add this line
+//       username: adminUser.username,
+//       role: adminUser.role,
+//       name: empUser.name,
+//       created_at: adminUser.created_at,
+//     };
+
+   
+//     return res.json({ success: true, role: adminUser.role, user: userData });
+//   } catch (err) {
+//     console.error("Login error:", err);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// });
+
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
 
@@ -38,52 +98,80 @@ app.post("/api/login", async (req, res) => {
     }
 
     const usernamePattern = /^DS\d{3}$/;
-    if (!usernamePattern.test(username)) {
+    const trimmedUsername = username.trim();  // remove leading/trailing spaces
+    if (!usernamePattern.test(trimmedUsername)) {
       return res.status(400).json({ success: false, message: "Username must start with 'DS' followed by 3 digits" });
     }
 
-    // Check admin table
+    let userData = null;
+    let role = null;
+
+    // 1️⃣ Check if user exists in admin table
     const adminResult = await pool.query(
       "SELECT id, username, password, role, created_at FROM admin WHERE username = $1",
-      [username]
+      [trimmedUsername]
     );
 
-    if (adminResult.rows.length === 0) {
-      return res.status(400).json({ success: false, message: "User not found in admin table" });
-    }
+    if (adminResult.rows.length > 0) {
+      // Admin login
+      const adminUser = adminResult.rows[0];
+      if (adminUser.password !== password) {
+        return res.status(400).json({ success: false, message: "Invalid password" });
+      }
+      role = adminUser.role;
 
-    const adminUser = adminResult.rows[0];
-
-    if (adminUser.password !== password) {
-      return res.status(400).json({ success: false, message: "Invalid password" });
-    }
-
-    let userData = {
-      id: adminUser.id,
-      username: adminUser.username,
-      role: adminUser.role,
-      created_at: adminUser.created_at,
-    };
-
-    // If employee role, fetch details
-    if (adminUser.role.toLowerCase() === "employee") {
+      // Fetch name/department from emp_details
       const empResult = await pool.query(
-        "SELECT emp_code, name, department FROM emp_details WHERE emp_code = $1",
+        "SELECT name, department FROM emp_details WHERE emp_code = $1",
         [username]
       );
 
-      if (empResult.rows.length > 0) {
-        const empUser = empResult.rows[0];
-        userData = { ...userData, emp_code: empUser.emp_code, name: empUser.name, department: empUser.department };
+      userData = {
+        id: adminUser.id,
+        emp_code: adminUser.username,
+        username: adminUser.username,
+        role: adminUser.role,
+        created_at: adminUser.created_at,
+        name: empResult.rows.length > 0 ? empResult.rows[0].name : null,
+        department: empResult.rows.length > 0 ? empResult.rows[0].department : null,
+      };
+
+    } else {
+      // Check employee table
+      const empResult = await pool.query(
+        "SELECT emp_code, name, department, password FROM emp_details WHERE emp_code = $1",
+        [username]
+      );
+
+      if (empResult.rows.length === 0) {
+        return res.status(400).json({ success: false, message: "User not found" });
       }
+
+      const empUser = empResult.rows[0];
+      if (empUser.password !== password) {
+        return res.status(400).json({ success: false, message: "Invalid password" });
+      }
+
+      role = "employee";
+      userData = {
+        id: null, // employee table may not have id
+        emp_code: empUser.emp_code,
+        username: empUser.emp_code,
+        role: role,
+        name: empUser.name,
+        department: empUser.department,
+        created_at: null,
+      };
     }
 
-    return res.json({ success: true, role: adminUser.role, user: userData });
+    return res.json({ success: true, role, user: userData });
+
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 
 // ======================================
 // Generate Employee Code
