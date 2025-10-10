@@ -313,3 +313,26 @@ textarea {
   from { opacity: 1; transform: translateY(0); }
   to { opacity: 0; transform: translateY(20px); }
 }
+/* Container for table header (title + download button) */
+.task-list-container .table-header {
+  display: flex;
+  justify-content: space-between; /* title left, button right */
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/* Download button style */
+.task-list-container .download-btn {
+  background-color: #4CAF50; /* green like employee button */
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s ease;
+}
+
+.task-list-container .download-btn:hover {
+  background-color: #45a049;
+}

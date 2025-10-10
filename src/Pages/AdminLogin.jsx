@@ -2,10 +2,9 @@ import "./AdminLogin.css";
 import CryptoJS from "crypto-js";
 import Footer from "./Footer";
 import Header from "./Header";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import React, { useState, useEffect } from "react";
-
 
 export default function AdminLogin() {
   const [username, setUsername] = useState("");
@@ -165,7 +164,7 @@ async function submit(e) {
   // Username validation
   const usernamePattern = /^DS\d{3}$/;
   if (!usernamePattern.test(username)) {
-    setErr("Username must start with 'DS' followed by 3 digits (e.g., DS001)");
+    setErr("Username must start with 'DS' ");
     return;
   }
 
