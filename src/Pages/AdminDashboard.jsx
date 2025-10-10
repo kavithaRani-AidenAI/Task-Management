@@ -1,9 +1,11 @@
 import "./AdminDashboard.css";
+import * as XLSX from "xlsx";
 import Footer from "./Footer";
 import Header from "./Header";
 import React, { useEffect, useState } from "react";
 import TaskAssignForm from "./TaskAssignForm";
 import axios from "axios";
+import { saveAs } from "file-saver";
 import { useNavigate } from "react-router-dom";
 
 export default function AdminDashboard() {
@@ -173,6 +175,33 @@ export default function AdminDashboard() {
   const showEmployees = () => { fetchEmployees(); setActivePage("employees"); };
   const showTasks = () => setActivePage("tasks");
 
+  // -----------------------------
+  // Excel Export
+  // -----------------------------
+  const exportToExcel = () => {
+    if (employees.length === 0) {
+      alert("No data to export!");
+      return;
+    }
+    const worksheetData = employees.map(emp => ({
+      "Employee ID": emp.emp_code,
+      Name: emp.name,
+      Email: emp.email,
+      Department: emp.department,
+      Position: emp.position,
+      "Tasks Assigned": emp.tasks_assigned,
+      "Tasks Completed": emp.tasks_completed,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
+
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(data, `Employees_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+
   return (
     <>
       <Header currentUser={null} />
@@ -213,81 +242,57 @@ export default function AdminDashboard() {
           <div>
             <form onSubmit={handleSubmit} className="empform">
               <h2>Add New Employee</h2><br />
-              <input
-                type="text"
-                name="name"
-                placeholder="Enter employee name"
-                value={form.name}
-                onChange={handleChange}
-                required
-                disabled={isSubmitting}
-              />
-              <input
-                type="email"
-                name="email"
-                placeholder="Enter email"
-                value={form.email}
-                onChange={handleChange}
-                required
-                disabled={isSubmitting}
-              />
-              <select
-                name="department"
-                value={form.department}
-                onChange={handleChange}
-                required
-                disabled={isSubmitting}
-              >
+              <input type="text" name="name" placeholder="Enter employee name" value={form.name} onChange={handleChange} required disabled={isSubmitting} />
+              <input type="email" name="email" placeholder="Enter email" value={form.email} onChange={handleChange} required disabled={isSubmitting} />
+              <select name="department" value={form.department} onChange={handleChange} required disabled={isSubmitting}>
                 <option value="">Select Department</option>
                 <option value="IT">IT</option>
                 <option value="HR">HR</option>
                 <option value="Finance">Finance</option>
               </select>
-              <input
-                type="text"
-                name="position"
-                placeholder="Enter position"
-                value={form.position}
-                onChange={handleChange}
-                required
-                disabled={isSubmitting}
-              />
+              <input type="text" name="position" placeholder="Enter position" value={form.position} onChange={handleChange} required disabled={isSubmitting} />
               <div className='form-group'>
                 <button type="submit" disabled={isSubmitting}>ADD</button>
               </div>
             </form>
 
-            <h3>Employee List</h3>
-            <table className="employee-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Department</th>
-                  <th>Position</th>
-                  <th>Tasks Assigned</th>
-                  <th>Tasks Completed</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {employees.map(emp => (
-                  <tr key={emp.id}>
-                    <td>{emp.emp_code}</td>
-                    <td>{emp.name}</td>
-                    <td>{emp.email}</td>
-                    <td>{emp.department}</td>
-                    <td>{emp.position}</td>
-                    <td>{emp.tasks_assigned}</td>
-                    <td>{emp.tasks_completed}</td>
-                    <td>
-                      <button onClick={() => deleteEmployee(emp.id)}>Delete</button>
-                    </td>
+            <div className="table-header">
+              <h3>Employee List</h3>
+              <button className="download-btn" onClick={exportToExcel}>⬇️ Download Excel</button>
+            </div>
+
+            <div className="employee-table-wrapper">
+              <table className="employee-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Department</th>
+                    <th>Position</th>
+                    <th>Tasks Assigned</th>
+                    <th>Tasks Completed</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {employees.map(emp => (
+                    <tr key={emp.id}>
+                      <td>{emp.emp_code}</td>
+                      <td>{emp.name}</td>
+                      <td>{emp.email}</td>
+                      <td>{emp.department}</td>
+                      <td>{emp.position}</td>
+                      <td>{emp.tasks_assigned}</td>
+                      <td>{emp.tasks_completed}</td>
+                      <td>
+                        <button onClick={() => deleteEmployee(emp.id)}>Delete</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 

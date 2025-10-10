@@ -304,3 +304,71 @@ input, select, button {
   from { opacity: 0; transform: translate(-50%, -60%); }
   to { opacity: 1; transform: translate(-50%, -50%); }
 }
+.download-btn {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.download-btn:hover {
+  background-color: #0056b3;
+  transform: translateY(-1px);
+}
+
+.download-btn:active {
+  transform: scale(0.98);
+}
+.employee-table-wrapper {
+  height: 60vh; /* visible height of table container */
+  overflow-y: auto; /* vertical scroll */
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.employee-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.employee-table th,
+.employee-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+.employee-table th {
+  background-color: #f2f2f2;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.download-btn {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.download-btn:hover {
+  background-color: #0056b3;
+}
+

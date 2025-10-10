@@ -2,10 +2,9 @@ import "./AdminLogin.css";
 import CryptoJS from "crypto-js";
 import Footer from "./Footer";
 import Header from "./Header";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import React, { useState, useEffect } from "react";
-
 
 export default function AdminLogin() {
   const [username, setUsername] = useState("");
@@ -38,12 +37,12 @@ export default function AdminLogin() {
       return false;
     }
     if (!usernameRegex.test(username)) {
-      setErr("Username must start with DS");
+      setErr('Username must start with "DS" followed by exactly 3 digits (e.g., DS001)');
       return false;
     }
     if (!passwordRegex.test(password)) {
       setErr(
-        "Password Invalid"
+        "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character"
       );
       return false;
     }
