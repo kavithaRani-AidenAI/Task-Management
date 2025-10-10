@@ -35,6 +35,20 @@ function EmployeeDashboard() {
     status: ""
   });
 
+  // ------------------------------
+  // Helper: Format date to IST
+  // ------------------------------
+    const formatToIST = (dateStr) => {
+    if (!dateStr) return "";
+    // Parse UTC time
+    const date = new Date(dateStr);
+    // Convert to IST offset
+    const istOffset = 5.5 * 60; // 5 hours 30 minutes in minutes
+    const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+    const istTime = new Date(utc + istOffset * 60000);
+    return istTime.toLocaleString("en-IN", { hour12: true });
+};
+
   // Live clock
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -157,9 +171,7 @@ function EmployeeDashboard() {
   // Status change
   const handleStatusChange = async (taskId, newStatus) => {
     try {
-      const res = await axios.put(`${API_BASE}/tasks/${taskId}/status`, {
-        status: newStatus,
-      });
+      await axios.put(`${API_BASE}/tasks/${taskId}/status`, { status: newStatus });
       fetchTasks();
     } catch (err) {
       console.error("Error updating status:", err);
@@ -200,7 +212,7 @@ function EmployeeDashboard() {
       Submodule: task.submodule,
       "Task Details": task.task_details,
       "Assigned From": task.assigned_from,
-      "Assigned At": new Date(task.created_at).toLocaleString(),
+      "Assigned At": formatToIST(task.created_at),
       Status: task.status,
     }));
 
@@ -366,17 +378,18 @@ function EmployeeDashboard() {
           </form>
           {success && <div className="popup">✅ Task added successfully!</div>}
         </div>
-               <div className="excel-btn-container">
-  <button className="download-btn" onClick={exportToExcel}>
-    ⬇️ Download Excel
-  </button>
-</div>
+
+        {/* Excel button at top-right */}
+        <div className="excel-btn-container">
+          <button className="download-btn" onClick={exportToExcel}>
+            ⬇️ Download Excel
+          </button>
+        </div>
 
         {/* Task Table */}
         <div className="task-list-containers">
           <div className="task-table-header">
             <h3>Assigned Tasks</h3>
-            
           </div>
 
           <table className="task-table">
@@ -408,7 +421,7 @@ function EmployeeDashboard() {
                     <td>{task.module}</td>
                     <td>{task.submodule}</td>
                     <td>{task.task_details}</td>
-                    <td>{new Date(task.created_at).toLocaleString()}</td>
+                    <td>{formatToIST(task.created_at)}</td>
                     <td>{task.assigned_from}</td>
                     <td>
                       <select
