@@ -1,9 +1,11 @@
 import "../App.css";
 import "./EmployeeDashboard.css";
+import * as XLSX from "xlsx";
 import DashboardHeader from "./DashboardHeader";
 import Footer from "./Footer";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { saveAs } from "file-saver";
 import { useNavigate, useParams } from "react-router-dom";
 
 function EmployeeDashboard() {
@@ -22,6 +24,7 @@ function EmployeeDashboard() {
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false); // ✅ New state
 
   const [form, setForm] = useState({
     emp_code: "",
@@ -121,9 +124,13 @@ function EmployeeDashboard() {
   // Form change
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  // Task submit
+  // ✅ Task submit (with disable/enable logic)
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (submitting) return; // Prevent double-click
+    setSubmitting(true); // Disable the button
+
     const admin = JSON.parse(localStorage.getItem("admin"));
     const employee = JSON.parse(localStorage.getItem("employee"));
     const assignedFrom = admin?.emp_code || employee?.emp_code || "self";
@@ -149,21 +156,24 @@ function EmployeeDashboard() {
     } catch (err) {
       alert("Error assigning task!");
       console.error(err);
+    } finally {
+      // ✅ Always re-enable the button after completion
+      setSubmitting(false);
     }
   };
 
-  // Toggle task status
-  const toggleStatus = async (taskItem) => {
-    const newStatus = taskItem.status === "Pending" ? "Done" : "Pending";
+  // Status change
+  const handleStatusChange = async (taskId, newStatus) => {
     try {
-      const res = await axios.put(`${API_BASE}/tasks/${taskItem.task_id}`, { status: newStatus });
-      setTasks(prev => prev.map(t => t.task_id === res.data.task_id ? res.data : t));
+      await axios.put(`${API_BASE}/tasks/${taskId}/status`, { status: newStatus });
+      fetchTasks();
     } catch (err) {
-      console.error(err);
+      console.error("Error updating status:", err);
+      alert("Failed to update status. Try again.");
     }
   };
 
-  // Delete task
+  // Delete logic
   const handleDeleteClick = (task) => {
     setTaskToDelete(task);
     setShowPopup(true);
@@ -180,15 +190,44 @@ function EmployeeDashboard() {
     }
   };
 
-  // Calendar helpers
+  // Excel export
+  const exportToExcel = () => {
+    if (filteredTasks.length === 0) {
+      alert("No tasks to export!");
+      return;
+    }
+
+    const worksheetData = filteredTasks.map((task) => ({
+      "Task ID": task.task_id,
+      "Employee Code": task.emp_code,
+      "Employee Name": task.emp_name,
+      Project: task.project,
+      Module: task.module,
+      Submodule: task.submodule,
+      "Task Details": task.task_details,
+      "Assigned From": task.assigned_from,
+      "Assigned At": new Date(task.created_at).toLocaleString(),
+      Status: task.status,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tasks");
+
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(data, `Tasks_${empCode}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+
+  // Calendar
   const [currentMonth, setCurrentMonth] = useState(currentTime.getMonth());
   const [currentYear, setCurrentYear] = useState(currentTime.getFullYear());
   const prevMonth = () => {
-    if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(currentYear - 1); } 
+    if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(currentYear - 1); }
     else setCurrentMonth(currentMonth - 1);
   };
   const nextMonth = () => {
-    if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(currentYear + 1); } 
+    if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(currentYear + 1); }
     else setCurrentMonth(currentMonth + 1);
   };
 
@@ -201,7 +240,8 @@ function EmployeeDashboard() {
   const generateMonthGrid = (month, year) => {
     const firstDay = new Date(year, month, 1).getDay();
     const lastDate = new Date(year, month + 1, 0).getDate();
-    const weeks = []; let week = [];
+    const weeks = [];
+    let week = [];
     for (let i = 0; i < firstDay; i++) week.push(null);
     for (let d = 1; d <= lastDate; d++) {
       week.push(d);
@@ -212,28 +252,13 @@ function EmployeeDashboard() {
     return weeks;
   };
 
-const handleStatusChange = async (taskId, newStatus) => {
-  console.log("Updating task:", taskId, "to status:", newStatus); // ✅ Debug line
-  try {
-    const res = await axios.put(`http://localhost:5000/api/tasks/${taskId}/status`, {
-      status: newStatus,
-    });
-    console.log("Status update success:", res.data);
-    fetchTasks();
-  } catch (err) {
-    console.error("Error updating status:", err);
-    alert("Failed to update status. Try again.");
-  }
-};
-
   return (
     <>
       <DashboardHeader currentUser={emp} />
       <div className="employee-dashboard-container">
-
         {/* Profile */}
         <div className="profile-section card">
-          <img src="/tim.jpeg" alt="Profile" className="profile-photo"/>
+          <img src="/tim.jpeg" alt="Profile" className="profile-photo" />
           <div className="profile-info">
             <p><strong>Name:</strong> {emp?.name}</p>
             <p><strong>Designation:</strong> {emp?.position}</p>
@@ -250,7 +275,9 @@ const handleStatusChange = async (taskId, newStatus) => {
             <button onClick={nextMonth}>&gt;</button>
           </div>
           <div className="calendar-weekdays">
-            {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d => <div key={d} className="calendar-weekday">{d}</div>)}
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(d => (
+              <div key={d} className="calendar-weekday">{d}</div>
+            ))}
           </div>
           <div className="calendar-grid">
             {generateMonthGrid(currentMonth, currentYear).map((week, i) => (
@@ -260,7 +287,10 @@ const handleStatusChange = async (taskId, newStatus) => {
 
                   const dateOfDay = new Date(currentYear, currentMonth, day);
                   const dateStr = dateOfDay.toLocaleDateString();
-                  const isToday = day === currentTime.getDate() && currentMonth === currentTime.getMonth() && currentYear === currentTime.getFullYear();
+                  const isToday = day === currentTime.getDate() &&
+                    currentMonth === currentTime.getMonth() &&
+                    currentYear === currentTime.getFullYear();
+
                   const isCompleted = completedDates.includes(dateStr);
                   const isHoliday = holidays.includes(dateStr);
 
@@ -279,7 +309,9 @@ const handleStatusChange = async (taskId, newStatus) => {
                     >
                       {day}
                       {tasks.filter(t => t.date === dateStr).length > 0 && (
-                        <span className="task-badge">{tasks.filter(t => t.date === dateStr).length}</span>
+                        <span className="task-badge">
+                          {tasks.filter(t => t.date === dateStr).length}
+                        </span>
                       )}
                     </div>
                   );
@@ -298,7 +330,11 @@ const handleStatusChange = async (taskId, newStatus) => {
                 <h5 className="style">Project:</h5>
                 <select name="project" value={form.project} onChange={handleChange} required>
                   <option value="">-- Select Project --</option>
-                  {projects.map((proj) => <option key={proj.project_id} value={proj.project_name}>{proj.project_name}</option>)}
+                  {projects.map((proj) => (
+                    <option key={proj.project_id} value={proj.project_name}>
+                      {proj.project_name}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="form-group">
@@ -321,19 +357,37 @@ const handleStatusChange = async (taskId, newStatus) => {
               </div>
               <div className="form-group full-width">
                 <h5 className="rem-style">Remarks:</h5>
-                <textarea name="task_details" value={form.task_details} onChange={handleChange} placeholder="Enter task details here..." required />
+                <textarea
+                  name="task_details"
+                  value={form.task_details}
+                  onChange={handleChange}
+                  placeholder="Enter task details here..."
+                  required
+                />
               </div>
               <div className="form-actions">
-                <button type="submit">Submit</button>
+                {/* ✅ Gray-out + disable while saving */}
+                <button type="submit" disabled={submitting}>
+                  {submitting ? "Saving..." : "Submit"}
+                </button>
               </div>
             </div>
           </form>
           {success && <div className="popup">✅ Task added successfully!</div>}
         </div>
 
+        <div className="task-header">
+          <button className="download-btn" onClick={exportToExcel}>
+            ⬇️ Download Excel
+          </button>
+        </div>
+
         {/* Task Table */}
         <div className="task-list-containers">
-          <h3>Assigned Tasks</h3>
+          <div className="task-table-header">
+            <h3>Assigned Tasks</h3>
+          </div>
+
           <table className="task-table">
             <thead>
               <tr>
@@ -365,17 +419,16 @@ const handleStatusChange = async (taskId, newStatus) => {
                     <td>{task.task_details}</td>
                     <td>{new Date(task.created_at).toLocaleString()}</td>
                     <td>{task.assigned_from}</td>
-                    {/* <td>{task.status}</td> */}
-                  <td>
-                    <select
-                      value={task.status || "Pending"}
-                      onChange={(e) => handleStatusChange(task.task_id, e.target.value)}
-                    >
-                      <option value="Pending">Pending</option>
-                      <option value="In Progress">In Progress</option>
-                      <option value="Completed">Completed</option>
-                    </select>
-                  </td>
+                    <td>
+                      <select
+                        value={task.status || "Pending"}
+                        onChange={(e) => handleStatusChange(task.task_id, e.target.value)}
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                      </select>
+                    </td>
                     <td>
                       <button className="delete-btn" onClick={() => handleDeleteClick(task)}>
                         Delete
@@ -392,22 +445,41 @@ const handleStatusChange = async (taskId, newStatus) => {
         {showPopup && (
           <div className="modal-overlay">
             <div className="modal-content">
-              <span className="modal-close" onClick={() => { setShowPopup(false); setConfirmDelete(false); }}>❌</span>
+              <span
+                className="modal-close"
+                onClick={() => {
+                  setShowPopup(false);
+                  setConfirmDelete(false);
+                }}
+              >
+                ❌
+              </span>
               <h3 style={{ color: "red" }}>Do you want to delete this task?</h3>
               <p><strong>{taskToDelete?.task_details}</strong></p>
               <label>
-                <input type="checkbox" checked={confirmDelete} onChange={e => setConfirmDelete(e.target.checked)} />
+                <input
+                  type="checkbox"
+                  checked={confirmDelete}
+                  onChange={(e) => setConfirmDelete(e.target.checked)}
+                />
                 Yes, I want to delete
               </label>
               <div className="modal-actions">
-                <button className="delete-btn" disabled={!confirmDelete} onClick={() => { deleteTask(taskToDelete.task_id); setShowPopup(false); setConfirmDelete(false); }}>
+                <button
+                  className="delete-btn"
+                  disabled={!confirmDelete}
+                  onClick={() => {
+                    deleteTask(taskToDelete.task_id);
+                    setShowPopup(false);
+                    setConfirmDelete(false);
+                  }}
+                >
                   Delete
                 </button>
               </div>
             </div>
           </div>
         )}
-
       </div>
       <Footer />
     </>
