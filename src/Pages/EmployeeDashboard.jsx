@@ -24,6 +24,7 @@ function EmployeeDashboard() {
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false); // ✅ New state
 
   const [form, setForm] = useState({
     emp_code: "",
@@ -34,20 +35,6 @@ function EmployeeDashboard() {
     assigned_from: "",
     status: ""
   });
-
-  // ------------------------------
-  // Helper: Format date to IST
-  // ------------------------------
-    const formatToIST = (dateStr) => {
-    if (!dateStr) return "";
-    // Parse UTC time
-    const date = new Date(dateStr);
-    // Convert to IST offset
-    const istOffset = 5.5 * 60; // 5 hours 30 minutes in minutes
-    const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
-    const istTime = new Date(utc + istOffset * 60000);
-    return istTime.toLocaleString("en-IN", { hour12: true });
-};
 
   // Live clock
   useEffect(() => {
@@ -137,9 +124,13 @@ function EmployeeDashboard() {
   // Form change
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  // Task submit
+  // ✅ Task submit (with disable/enable logic)
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (submitting) return; // Prevent double-click
+    setSubmitting(true); // Disable the button
+
     const admin = JSON.parse(localStorage.getItem("admin"));
     const employee = JSON.parse(localStorage.getItem("employee"));
     const assignedFrom = admin?.emp_code || employee?.emp_code || "self";
@@ -165,6 +156,9 @@ function EmployeeDashboard() {
     } catch (err) {
       alert("Error assigning task!");
       console.error(err);
+    } finally {
+      // ✅ Always re-enable the button after completion
+      setSubmitting(false);
     }
   };
 
@@ -212,7 +206,7 @@ function EmployeeDashboard() {
       Submodule: task.submodule,
       "Task Details": task.task_details,
       "Assigned From": task.assigned_from,
-      "Assigned At": formatToIST(task.created_at),
+      "Assigned At": new Date(task.created_at).toLocaleString(),
       Status: task.status,
     }));
 
@@ -372,15 +366,17 @@ function EmployeeDashboard() {
                 />
               </div>
               <div className="form-actions">
-                <button type="submit">Submit</button>
+                {/* ✅ Gray-out + disable while saving */}
+                <button type="submit" disabled={submitting}>
+                  {submitting ? "Saving..." : "Submit"}
+                </button>
               </div>
             </div>
           </form>
           {success && <div className="popup">✅ Task added successfully!</div>}
         </div>
 
-        {/* Excel button at top-right */}
-        <div className="excel-btn-container">
+        <div className="task-header">
           <button className="download-btn" onClick={exportToExcel}>
             ⬇️ Download Excel
           </button>
@@ -421,7 +417,7 @@ function EmployeeDashboard() {
                     <td>{task.module}</td>
                     <td>{task.submodule}</td>
                     <td>{task.task_details}</td>
-                    <td>{formatToIST(task.created_at)}</td>
+                    <td>{new Date(task.created_at).toLocaleString()}</td>
                     <td>{task.assigned_from}</td>
                     <td>
                       <select

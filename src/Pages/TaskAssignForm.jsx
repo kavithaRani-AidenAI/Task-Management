@@ -117,16 +117,8 @@ export default function TaskAssignForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const admin = JSON.parse(localStorage.getItem("admin"));
-<<<<<<< HEAD
     const payload = { ...form, created_at: new Date().toISOString(),assigned_from: admin?.name,status: "Pending", };
-=======
-    const payload = { 
-      ...form, 
-      created_at: new Date().toISOString(), 
-      assigned_from: admin.emp_code, 
-      status: "Pending" 
-    };
->>>>>>> dc45aecf067ac4bad8acd8495ffd40525946daf4
+
 
     try {
       await axios.post("http://localhost:5000/api/tasks", payload);
