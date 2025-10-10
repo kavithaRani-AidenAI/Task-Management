@@ -24,7 +24,8 @@ function EmployeeDashboard() {
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [submitting, setSubmitting] = useState(false); // ✅ New state
+  const [submitting, setSubmitting] = useState(false);
+  const [taskFilter, setTaskFilter] = useState("All"); // All, Pending, In Progress, Completed
 
   const [form, setForm] = useState({
     emp_code: "",
@@ -124,12 +125,11 @@ function EmployeeDashboard() {
   // Form change
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  // ✅ Task submit (with disable/enable logic)
+  // Task submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (submitting) return; // Prevent double-click
-    setSubmitting(true); // Disable the button
+    if (submitting) return;
+    setSubmitting(true);
 
     const admin = JSON.parse(localStorage.getItem("admin"));
     const employee = JSON.parse(localStorage.getItem("employee"));
@@ -157,7 +157,6 @@ function EmployeeDashboard() {
       alert("Error assigning task!");
       console.error(err);
     } finally {
-      // ✅ Always re-enable the button after completion
       setSubmitting(false);
     }
   };
@@ -192,12 +191,16 @@ function EmployeeDashboard() {
 
   // Excel export
   const exportToExcel = () => {
-    if (filteredTasks.length === 0) {
+    const displayedTasks = taskFilter === "All"
+      ? filteredTasks
+      : filteredTasks.filter(t => t.status === taskFilter);
+
+    if (displayedTasks.length === 0) {
       alert("No tasks to export!");
       return;
     }
 
-    const worksheetData = filteredTasks.map((task) => ({
+    const worksheetData = displayedTasks.map((task) => ({
       "Task ID": task.task_id,
       "Employee Code": task.emp_code,
       "Employee Name": task.emp_name,
@@ -251,6 +254,16 @@ function EmployeeDashboard() {
     if (week.length > 0) weeks.push(week);
     return weeks;
   };
+
+  // Task counts for cards
+  const totalTasks = filteredTasks.length;
+  const pendingTasks = filteredTasks.filter(t => t.status === "Pending").length;
+  const inProgressTasks = filteredTasks.filter(t => t.status === "In Progress").length;
+  const completedTasks = filteredTasks.filter(t => t.status === "Completed").length;
+
+  const displayedTasks = taskFilter === "All"
+    ? filteredTasks
+    : filteredTasks.filter(t => t.status === taskFilter);
 
   return (
     <>
@@ -323,7 +336,7 @@ function EmployeeDashboard() {
 
         {/* Task Form */}
         <div className="form-container">
-          <h3>Create Task</h3>
+          <h3>Add Report</h3>
           <form className="task-form" onSubmit={handleSubmit}>
             <div className="form-row">
               <div className="form-group">
@@ -366,7 +379,6 @@ function EmployeeDashboard() {
                 />
               </div>
               <div className="form-actions">
-                {/* ✅ Gray-out + disable while saving */}
                 <button type="submit" disabled={submitting}>
                   {submitting ? "Saving..." : "Submit"}
                 </button>
@@ -376,11 +388,50 @@ function EmployeeDashboard() {
           {success && <div className="popup">✅ Task added successfully!</div>}
         </div>
 
-        <div className="task-header">
-          <button className="download-btn" onClick={exportToExcel}>
-            ⬇️ Download Excel
-          </button>
-        </div>
+        {/* Summary Cards */}
+       <div className="task-summary-cards">
+  <div
+    className={`summary-card total ${taskFilter === "All" ? "active" : ""}`}
+    onClick={() => setTaskFilter("All")}
+  >
+    <h4>Total Tasks</h4>
+    <p>{totalTasks}</p>
+  </div>
+
+  <div
+    className={`summary-card in-progress ${taskFilter === "In Progress" ? "active" : ""}`}
+    onClick={() => setTaskFilter("In Progress")}
+  >
+    <h4>In Progress</h4>
+    <p>{inProgressTasks}</p>
+  </div>
+
+  <div
+    className={`summary-card pending ${taskFilter === "Pending" ? "active" : ""}`}
+    onClick={() => setTaskFilter("Pending")}
+  >
+    <h4>Pending</h4>
+    <p>{pendingTasks}</p>
+  </div>
+
+  <div
+    className={`summary-card completed ${taskFilter === "Completed" ? "active" : ""}`}
+    onClick={() => setTaskFilter("Completed")}
+  >
+    <h4>Completed</h4>
+    <p>{completedTasks}</p>
+  </div>
+</div>
+
+
+        {/* Excel Download */}
+        <div className="task-table-header">
+  
+  <button className="download-btn" onClick={exportToExcel}>
+    ⬇️ Download Excel
+  </button>
+</div>
+
 
         {/* Task Table */}
         <div className="task-list-containers">
@@ -404,12 +455,12 @@ function EmployeeDashboard() {
               </tr>
             </thead>
             <tbody>
-              {filteredTasks.length === 0 ? (
+              {displayedTasks.length === 0 ? (
                 <tr>
                   <td colSpan="10" style={{ textAlign: "center" }}>No tasks found</td>
                 </tr>
               ) : (
-                filteredTasks.map((task, index) => (
+                displayedTasks.map((task, index) => (
                   <tr key={index}>
                     <td>{task.task_id}</td>
                     <td>{task.emp_name} ({task.emp_code})</td>
