@@ -60,6 +60,20 @@ function EmployeeDashboard() {
 
     return () => window.removeEventListener("popstate", handlePopState);
   }, [navigate]);
+  //color for that status
+  const getStatusColor = (status) => {
+  switch (status) {
+    case "Pending":
+      return "red";
+    case "In Progress":
+      return "orange";
+    case "Completed":
+      return "lightgreen";
+    default:
+      return "white";
+  }
+};
+
 
   // Fetch tasks
   const fetchTasks = async () => {
@@ -206,8 +220,8 @@ function EmployeeDashboard() {
       "Employee Name": task.emp_name,
       Project: task.project,
       Module: task.module,
-      Submodule: task.submodule,
-      "Task Details": task.task_details,
+      //Submodule: task.submodule,
+      "Task Details": `${task.submodule || ""} --- ${task.task_details || ""}`,
       "Assigned From": task.assigned_from,
       "Assigned At": new Date(task.created_at).toLocaleString(),
       Status: task.status,
@@ -360,15 +374,16 @@ function EmployeeDashboard() {
                 </select>
               </div>
               <div className="form-group">
-                <h5 className="sub-style">Submodule:</h5>
-                <select name="submodule" value={form.submodule} onChange={handleChange} required>
-                  <option value="">-- Select Submodule --</option>
-                  <option value="Submodule A">Submodule A</option>
-                  <option value="Submodule B">Submodule B</option>
-                  <option value="Submodule C">Submodule C</option>
-                </select>
-              </div>
-              <div className="form-group full-width">
+                  <h5 className="sub-style">Submodule:</h5>
+                          <input
+                          type="text"
+                          name="submodule"
+                          value={form.submodule}
+                          onChange={handleChange}
+                          placeholder="Enter Submodule"
+                          required/>
+                </div>
+<div className="form-group full-width">
                 <h5 className="rem-style">Remarks:</h5>
                 <textarea
                   name="task_details"
@@ -446,7 +461,7 @@ function EmployeeDashboard() {
                 <th>Employee</th>
                 <th>Project</th>
                 <th>Module</th>
-                <th>Submodule</th>
+
                 <th>Task Details</th>
                 <th>Assigned At</th>
                 <th>Assigned From</th>
@@ -466,20 +481,21 @@ function EmployeeDashboard() {
                     <td>{task.emp_name} ({task.emp_code})</td>
                     <td>{task.project}</td>
                     <td>{task.module}</td>
-                    <td>{task.submodule}</td>
-                    <td>{task.task_details}</td>
+                    <td>{task.submodule}-{task.task_details}</td>
                     <td>{new Date(task.created_at).toLocaleString()}</td>
                     <td>{task.assigned_from}</td>
                     <td>
                       <select
                         value={task.status || "Pending"}
                         onChange={(e) => handleStatusChange(task.task_id, e.target.value)}
+                        style={{ backgroundColor: getStatusColor(task.status || "Pending") }}
                       >
                         <option value="Pending">Pending</option>
                         <option value="In Progress">In Progress</option>
                         <option value="Completed">Completed</option>
                       </select>
                     </td>
+
                     <td>
                       <button className="delete-btn" onClick={() => handleDeleteClick(task)}>
                         Delete

@@ -37,7 +37,7 @@ export default function AdminLogin() {
       return false;
     }
     if (!usernameRegex.test(username)) {
-      setErr('Username must start with "DS" followed by exactly 3 digits (e.g., DS001)');
+      setErr('Invalid username.');
       return false;
     }
     if (!passwordRegex.test(password)) {
@@ -236,7 +236,7 @@ if (role === "admin") {
 
     const usernamePattern = /^DS\d{3}$/;
     if (!usernamePattern.test(value)) {
-      setUsernameErr("Username must start with 'DS' followed by 3 digits (e.g., DS001)");
+      setUsernameErr('Invalid username.');
     } else {
       setUsernameErr("");
     }

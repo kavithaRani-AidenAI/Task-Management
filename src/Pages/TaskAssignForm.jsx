@@ -192,8 +192,8 @@ export default function TaskAssignForm({setActivePage }) {
       Employee: task.emp_name + " (" + task.emp_code + ")",
       Project: task.project,
       Module: task.module,
-      Submodule: task.submodule,
-      "Task Details": task.task_details,
+      //Submodule: task.submodule,
+      "Task Details": `${task.submodule || ""} --- ${task.task_details || ""}`,
       "Assigned At": formatToIST(task.created_at),
       "Assigned From": task.assigned_from,
       Status: task.status
@@ -266,14 +266,16 @@ export default function TaskAssignForm({setActivePage }) {
               </select>
             </div>
             <div className="form-group">
-              <label className="lbl-align">Submodule:</label>
-              <select name="submodule" value={form.submodule} onChange={handleChange} required>
-                <option value="">-- Select Submodule --</option>
-                <option value="Submodule A">Submodule A</option>
-                <option value="Submodule B">Submodule B</option>
-                <option value="Submodule C">Submodule C</option>
-              </select>
+              <input 
+                type="text"
+                name="submodule"
+                value={form.submodule}
+                onChange={handleChange}
+                placeholder="Enter Submodule"
+                required
+                />
             </div>
+
           </div>
 
           {/* Row 3: Task Details */}
@@ -311,7 +313,6 @@ export default function TaskAssignForm({setActivePage }) {
               <th>Employee</th>
               <th>Project</th>
               <th>Module</th>
-              <th>Submodule</th>
               <th>Task Details</th>
               <th>Assigned At</th>
               <th>Assigned From</th>
@@ -331,8 +332,7 @@ export default function TaskAssignForm({setActivePage }) {
                   <td>{task.emp_name} ({task.emp_code})</td>
                   <td>{task.project}</td>
                   <td>{task.module}</td>
-                  <td>{task.submodule}</td>
-                  <td>{task.task_details}</td>
+                  <td>{task.submodule} - {task.task_details}</td>
                   <td>{formatToIST(task.created_at)}</td>
                   <td>{task.assigned_from}</td>
                   <td>{task.status}</td>
