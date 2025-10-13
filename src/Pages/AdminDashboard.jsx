@@ -259,7 +259,7 @@ export default function AdminDashboard() {
           <div>
             <button onClick={showEmployees}>Manage Employees</button>
             <button onClick={showTasks}>Assign Tasks</button>
-            <button onClick={logout}>Logout</button>
+            {/* <button onClick={logout}>Logout</button> */}
           </div>
         </div>
 
@@ -268,10 +268,10 @@ export default function AdminDashboard() {
           <div className="dashboard-section">
             <h3>Welcome, Admin!</h3>
             <div className="stats-container">
-              <div className="stat-card total-employees" onClick={() => setFilterCard("totalEmployees")}>
+              {/* <div className="stat-card total-employees" onClick={() => setFilterCard("totalEmployees")}>
                 <div className="stat-title">Total Employees</div>
                 <div className="stat-value">{stats.totalEmployees}</div>
-              </div>
+              </div> */}
 
               <div className="stat-card total-tasks" onClick={() => setFilterCard("totalTasks")}>
                 <div className="stat-title">Total Tasks</div>
@@ -279,7 +279,17 @@ export default function AdminDashboard() {
               </div>
 
               <div className="stat-card pending-tasks" onClick={() => setFilterCard("pendingTasks")}>
-                <div className="stat-title">Pending Tasks</div>
+                <div className="stat-title">Pending</div>
+                <div className="stat-value">{stats.pendingTasks}</div>
+              </div>
+
+              <div className="stat-card pending-tasks" onClick={() => setFilterCard("pendingTasks")}>
+                <div className="stat-title">Inprogress</div>
+                <div className="stat-value">{stats.pendingTasks}</div>
+              </div>
+
+              <div className="stat-card pending-tasks" onClick={() => setFilterCard("pendingTasks")}>
+                <div className="stat-title">Completed</div>
                 <div className="stat-value">{stats.pendingTasks}</div>
               </div>
 
