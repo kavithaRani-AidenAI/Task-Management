@@ -64,15 +64,17 @@ function EmployeeDashboard() {
   const getStatusColor = (status) => {
   switch (status) {
     case "Pending":
-      return "red";
+      return "#FF6B6B"; // vivid coral red
     case "In Progress":
-      return "orange";
+      return "#FFD93D"; // rich golden yellow
     case "Completed":
-      return "lightgreen";
+      return "#4CAF50"; // strong green
     default:
       return "white";
   }
 };
+
+
 
 
   // Fetch tasks
@@ -419,14 +421,17 @@ function EmployeeDashboard() {
                   </select>
                 </div>
                 <div className="form-group">
-                  <h5 className="sub-style">Submodule:</h5>
-                  <select name="submodule" value={form.submodule} onChange={handleChange} required>
-                    <option value="">-- Select Submodule --</option>
-                    <option value="Submodule A">Submodule A</option>
-                    <option value="Submodule B">Submodule B</option>
-                    <option value="Submodule C">Submodule C</option>
-                  </select>
-                </div>
+                    <h5 className="sub-style">Submodule:</h5>
+                    <input
+                      type="text"
+                      name="submodule"
+                      value={form.submodule}
+                      onChange={handleChange}
+                      placeholder="Enter submodule"
+                      required
+                    />
+                  </div>
+
                 <div className="form-group full-width">
                   <h5 className="rem-style">Remarks:</h5>
                   <textarea

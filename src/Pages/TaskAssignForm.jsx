@@ -115,7 +115,7 @@ export default function TaskAssignForm({setActivePage }) {
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     const admin = JSON.parse(localStorage.getItem("admin"));
@@ -335,7 +335,9 @@ export default function TaskAssignForm({setActivePage }) {
                   <td>{task.submodule} - {task.task_details}</td>
                   <td>{formatToIST(task.created_at)}</td>
                   <td>{task.assigned_from}</td>
-                  <td>{task.status}</td>
+                  <td style={{color:task.status === "Pending"? "red": task.status === "In Progress"? "orange": "green",fontWeight: "bold"}}>
+                    {task.status}
+                  </td>
                   <td>
                     <button className="delete-btn" onClick={() => confirmDelete(task.task_id)}>Delete</button>
                   </td>
