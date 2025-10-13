@@ -26,7 +26,7 @@ function Header() {
      <div className="logo-section">
           <div className="logos">
               <img src="./DS logo.JPG" className="company-logoo"></img>
-              <span className="company-names">Employee Task Management System</span>
+              <span className="company-names">Task Management System</span>
           </div>
     </div>
 

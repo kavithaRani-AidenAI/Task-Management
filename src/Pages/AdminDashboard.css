@@ -65,7 +65,7 @@ input, select, button {
 
 /* Container */
 .container {
-  min-height: 100vh;
+  /* min-height: 100vh; */
   padding: 20px 40px;
   background: white;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -106,7 +106,7 @@ input, select, button {
   font-weight: 500;
   border: none;
   border-radius: 8px;
-  background: #007bff;
+  background:rgb(6, 6, 121);
   color: #fff;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -171,14 +171,17 @@ input, select, button {
 
 /* Form Container */
 .empform {
-  width: 60%;
-  margin: 20px auto;
-  padding: 30px 25px;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    width: 100%;
+    margin: 2px auto;
+    padding: 30px 25px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
+
 
 /* Form Heading */
 .empform h3 {
@@ -192,15 +195,18 @@ input, select, button {
 /* Input Fields & Select */
 .empform input,
 .empform select {
-  /* margin-left: -15%; */
-  margin-left: 5%;
-
-  padding: 12px 15px;
-  margin-bottom: 18px;
-  border: 1px solid #cccccc;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
+ 
+    width: 22%;
+    margin-left: 1%;
+    padding: 12px 15px;
+    margin-bottom: 18px;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+.alignments{
+  text-align: left;
 }
 
 /* Input & Select Focus */
@@ -218,17 +224,17 @@ input, select, button {
 
 /* Submit Button */
 .empform button {
-  margin-left: 200px;
-  width: 20%;
-  padding: 12px 0;
-  background-color: #4a90e2;
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
+    margin-left: 250px;
+    width: 24%;
+    padding: 9px 0;
+    background-color: darkgreen;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 /* Button Hover Effect */
@@ -389,7 +395,7 @@ input, select, button {
   border-radius: 6px;
   cursor: pointer;
   margin-bottom: 15px;
-  font-size: 14px;
+  /* font-size: 14px; */
   transition: background-color 0.3s ease;
 }
 
@@ -401,7 +407,7 @@ input, select, button {
 -------------------------- */
 .employee-table-wrapper,
 .tasks-table-wrapper {
-  margin-top: 20px;
+  margin-top: 4px;
   overflow-x: auto;
 }
 
@@ -473,7 +479,7 @@ button:hover {
 
 .download-btn {
   padding: 6px 12px;
-  background-color: #007bff;
+  background-color:green;
   color: #fff;
   border-radius: 6px;
   font-size: 13px;

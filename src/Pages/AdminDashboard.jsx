@@ -369,8 +369,8 @@ export default function AdminDashboard() {
             <button className="back-btn" onClick={() => setActivePage("dashboard")}>
               ← Back to Dashboard
             </button>
+             <h4 className="alignments">Add New Employee</h4>
             <form onSubmit={handleSubmit} className="empform">
-              <h2>Add New Employee</h2><br />
               <input type="text" name="name" placeholder="Enter employee name" value={form.name} onChange={handleChange} required disabled={isSubmitting} />
               <input type="email" name="email" placeholder="Enter email" value={form.email} onChange={handleChange} required disabled={isSubmitting} />
               <select name="department" value={form.department} onChange={handleChange} required disabled={isSubmitting}>
@@ -385,8 +385,8 @@ export default function AdminDashboard() {
               </div>
             </form>
 
-            <div className="table-header">
-              <h3>Employee List</h3>
+            <div className="table-header">  
+              <h4>Employee List</h4>
               <button className="download-btn" onClick={exportEmployeesToExcel}>⬇️ Download Excel</button>
             </div>
 

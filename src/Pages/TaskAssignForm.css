@@ -139,7 +139,7 @@ textarea {
 } */
 
 .task-list-container {
-    margin: 2rem 0 2rem -7rem;
+    margin: 2rem 0 2rem 0rem;
     padding: 1.5rem;
     width: 1400px;
     max-width: none;

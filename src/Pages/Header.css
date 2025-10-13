@@ -7,7 +7,7 @@
   
         /* Header Styles */
         .main-header {
-            background:rgb(6, 6, 121);
+            background:white;
             color: black;
             padding: 10px 0;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -171,8 +171,10 @@
         }
 
         .company-names {
-                color: whitesmoke;
-                font-size: clamp(14px, 2vw, 20px);
+            margin-left: 357px;
+
+                color: darkblue;
+                font-size: clamp(14px, 2vw, 25px);
                 font-weight: bold;
                 white-space: nowrap;
                 /* overflow: hidden; */
