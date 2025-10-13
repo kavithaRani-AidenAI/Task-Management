@@ -25,7 +25,7 @@ function EmployeeDashboard() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [taskFilter, setTaskFilter] = useState("All"); // All, Pending, In Progress, Completed
+  const [taskFilter, setTaskFilter] = useState("All");
 
   const [form, setForm] = useState({
     emp_code: "",
@@ -60,6 +60,20 @@ function EmployeeDashboard() {
 
     return () => window.removeEventListener("popstate", handlePopState);
   }, [navigate]);
+  //color for that status
+  const getStatusColor = (status) => {
+  switch (status) {
+    case "Pending":
+      return "red";
+    case "In Progress":
+      return "orange";
+    case "Completed":
+      return "lightgreen";
+    default:
+      return "white";
+  }
+};
+
 
   // Fetch tasks
   const fetchTasks = async () => {
@@ -206,8 +220,8 @@ function EmployeeDashboard() {
       "Employee Name": task.emp_name,
       Project: task.project,
       Module: task.module,
-      Submodule: task.submodule,
-      "Task Details": task.task_details,
+      //Submodule: task.submodule,
+      "Task Details": `${task.submodule || ""} --- ${task.task_details || ""}`,
       "Assigned From": task.assigned_from,
       "Assigned At": new Date(task.created_at).toLocaleString(),
       Status: task.status,
@@ -255,7 +269,7 @@ function EmployeeDashboard() {
     return weeks;
   };
 
-  // Task counts for cards
+  // Task counts
   const totalTasks = filteredTasks.length;
   const pendingTasks = filteredTasks.filter(t => t.status === "Pending").length;
   const inProgressTasks = filteredTasks.filter(t => t.status === "In Progress").length;
@@ -268,170 +282,179 @@ function EmployeeDashboard() {
   return (
     <>
       <DashboardHeader currentUser={emp} />
+
       <div className="employee-dashboard-container">
-        {/* Profile */}
-        <div className="profile-section card">
-          <img src="/tim.jpeg" alt="Profile" className="profile-photo" />
-          <div className="profile-info">
-            <p><strong>Name:</strong> {emp?.name}</p>
-            <p><strong>Designation:</strong> {emp?.position}</p>
-            <p><strong>Department:</strong> {emp?.department}</p>
-            <p><strong>Project:</strong> {emp?.project}</p>
-          </div>
-        </div>
 
-        {/* Calendar */}
-        <div className="calendar-section card">
-          <div className="calendar-header">
-            <button onClick={prevMonth}>&lt;</button>
-            <span>{new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long', year: 'numeric' })}</span>
-            <button onClick={nextMonth}>&gt;</button>
-          </div>
-          <div className="calendar-weekdays">
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(d => (
-              <div key={d} className="calendar-weekday">{d}</div>
-            ))}
-          </div>
-          <div className="calendar-grid">
-            {generateMonthGrid(currentMonth, currentYear).map((week, i) => (
-              <div key={i} className="calendar-week">
-                {week.map((day, idx) => {
-                  if (!day) return <div key={idx} className="calendar-day empty"></div>;
-
-                  const dateOfDay = new Date(currentYear, currentMonth, day);
-                  const dateStr = dateOfDay.toLocaleDateString();
-                  const isToday = day === currentTime.getDate() &&
-                    currentMonth === currentTime.getMonth() &&
-                    currentYear === currentTime.getFullYear();
-
-                  const isCompleted = completedDates.includes(dateStr);
-                  const isHoliday = holidays.includes(dateStr);
-
-                  let className = "calendar-day";
-                  if (isCompleted) className += " completed";
-                  else if (isHoliday) className += " holiday";
-                  else className += " pending";
-                  if (isToday) className += " today";
-                  if (dateStr === selectedDate) className += " selected";
-
-                  return (
-                    <div
-                      key={idx}
-                      className={className}
-                      onClick={() => setSelectedDate(dateStr)}
-                    >
-                      {day}
-                      {tasks.filter(t => t.date === dateStr).length > 0 && (
-                        <span className="task-badge">
-                          {tasks.filter(t => t.date === dateStr).length}
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Task Form */}
-        <div className="form-container">
-          <h3>Add Report</h3>
-          <form className="task-form" onSubmit={handleSubmit}>
-            <div className="form-row">
-              <div className="form-group">
-                <h5 className="style">Project:</h5>
-                <select name="project" value={form.project} onChange={handleChange} required>
-                  <option value="">-- Select Project --</option>
-                  {projects.map((proj) => (
-                    <option key={proj.project_id} value={proj.project_name}>
-                      {proj.project_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <h5 className="style">Module:</h5>
-                <select name="module" value={form.module} onChange={handleChange} required>
-                  <option value="">-- Select Module --</option>
-                  <option value="Module 1">Module 1</option>
-                  <option value="Module 2">Module 2</option>
-                  <option value="Module 3">Module 3</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <h5 className="sub-style">Submodule:</h5>
-                <select name="submodule" value={form.submodule} onChange={handleChange} required>
-                  <option value="">-- Select Submodule --</option>
-                  <option value="Submodule A">Submodule A</option>
-                  <option value="Submodule B">Submodule B</option>
-                  <option value="Submodule C">Submodule C</option>
-                </select>
-              </div>
-              <div className="form-group full-width">
-                <h5 className="rem-style">Remarks:</h5>
-                <textarea
-                  name="task_details"
-                  value={form.task_details}
-                  onChange={handleChange}
-                  placeholder="Enter task details here..."
-                  required
-                />
-              </div>
-              <div className="form-actions">
-                <button type="submit" disabled={submitting}>
-                  {submitting ? "Saving..." : "Submit"}
-                </button>
-              </div>
+        {/* Top row: Task Summary + Calendar */}
+        <div className="top-row">
+          <div className="task-summary-cards">
+            <div
+              className={`summary-card total ${taskFilter === "All" ? "active" : ""}`}
+              onClick={() => setTaskFilter("All")}
+            >
+              <h4>Total Tasks</h4>
+              <p>{totalTasks}</p>
             </div>
-          </form>
-          {success && <div className="popup">✅ Task added successfully!</div>}
+
+            <div
+              className={`summary-card in-progress ${taskFilter === "In Progress" ? "active" : ""}`}
+              onClick={() => setTaskFilter("In Progress")}
+            >
+              <h4>In Progress</h4>
+              <p>{inProgressTasks}</p>
+            </div>
+
+            <div
+              className={`summary-card pending ${taskFilter === "Pending" ? "active" : ""}`}
+              onClick={() => setTaskFilter("Pending")}
+            >
+              <h4>Pending</h4>
+              <p>{pendingTasks}</p>
+            </div>
+
+            <div
+              className={`summary-card completed ${taskFilter === "Completed" ? "active" : ""}`}
+              onClick={() => setTaskFilter("Completed")}
+            >
+              <h4>Completed</h4>
+              <p>{completedTasks}</p>
+            </div>
+          </div>
+
+          {/* Calendar */}
+          <div className="calendar-section card">
+            <div className="calendar-header">
+              <button onClick={prevMonth}>&lt;</button>
+              <span>
+                {new Date(currentYear, currentMonth).toLocaleString("default", { month: "long", year: "numeric" })}
+              </span>
+              <button onClick={nextMonth}>&gt;</button>
+            </div>
+            <div className="calendar-weekdays">
+              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(d => (
+                <div key={d} className="calendar-weekday">{d}</div>
+              ))}
+            </div>
+            <div className="calendar-grid">
+              {generateMonthGrid(currentMonth, currentYear).map((week, i) => (
+                <div key={i} className="calendar-week">
+                  {week.map((day, idx) => {
+                    if (!day) return <div key={idx} className="calendar-day empty"></div>;
+
+                    const dateOfDay = new Date(currentYear, currentMonth, day);
+                    const dateStr = dateOfDay.toLocaleDateString();
+                    const isToday =
+                      day === currentTime.getDate() &&
+                      currentMonth === currentTime.getMonth() &&
+                      currentYear === currentTime.getFullYear();
+
+                    const isCompleted = completedDates.includes(dateStr);
+                    const isHoliday = holidays.includes(dateStr);
+
+                    let className = "calendar-day";
+                    if (isCompleted) className += " completed";
+                    else if (isHoliday) className += " holiday";
+                    else className += " pending";
+                    if (isToday) className += " today";
+                    if (dateStr === selectedDate) className += " selected";
+
+                    return (
+                      <div
+                        key={idx}
+                        className={className}
+                        onClick={() => setSelectedDate(dateStr)}
+                      >
+                        {day}
+                        {tasks.filter(t => t.date === dateStr).length > 0 && (
+                          <span className="task-badge">
+                            {tasks.filter(t => t.date === dateStr).length}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Summary Cards */}
-       <div className="task-summary-cards">
-  <div
-    className={`summary-card total ${taskFilter === "All" ? "active" : ""}`}
-    onClick={() => setTaskFilter("All")}
-  >
-    <h4>Total Tasks</h4>
-    <p>{totalTasks}</p>
-  </div>
+        {/* Middle section: Profile + Task Form */}
+        <div className="middle-section">
 
-  <div
-    className={`summary-card in-progress ${taskFilter === "In Progress" ? "active" : ""}`}
-    onClick={() => setTaskFilter("In Progress")}
-  >
-    <h4>In Progress</h4>
-    <p>{inProgressTasks}</p>
-  </div>
+          {/* Profile */}
+          <div className="profile-section card">
+            <img src="/tim.jpeg" alt="Profile" className="profile-photo" />
+            <div className="profile-info">
+              <p><strong>Name:</strong> {emp?.name}</p>
+              <p><strong>Designation:</strong> {emp?.position}</p>
+              <p><strong>Department:</strong> {emp?.department}</p>
+              <p><strong>Project:</strong> {emp?.project}</p>
+            </div>
+          </div>
 
-  <div
-    className={`summary-card pending ${taskFilter === "Pending" ? "active" : ""}`}
-    onClick={() => setTaskFilter("Pending")}
-  >
-    <h4>Pending</h4>
-    <p>{pendingTasks}</p>
-  </div>
+          {/* Task Form */}
+          <div className="form-container">
+            <h3>Add Report</h3>
+            <form className="task-form" onSubmit={handleSubmit}>
+              <div className="form-row">
+                <div className="form-group">
+                  <h5 className="style">Project:</h5>
+                  <select name="project" value={form.project} onChange={handleChange} required>
+                    <option value="">-- Select Project --</option>
+                    {projects.map((proj) => (
+                      <option key={proj.project_id} value={proj.project_name}>
+                        {proj.project_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <h5 className="style">Module:</h5>
+                  <select name="module" value={form.module} onChange={handleChange} required>
+                    <option value="">-- Select Module --</option>
+                    <option value="Module 1">Module 1</option>
+                    <option value="Module 2">Module 2</option>
+                    <option value="Module 3">Module 3</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <h5 className="sub-style">Submodule:</h5>
+                  <select name="submodule" value={form.submodule} onChange={handleChange} required>
+                    <option value="">-- Select Submodule --</option>
+                    <option value="Submodule A">Submodule A</option>
+                    <option value="Submodule B">Submodule B</option>
+                    <option value="Submodule C">Submodule C</option>
+                  </select>
+                </div>
+                <div className="form-group full-width">
+                  <h5 className="rem-style">Remarks:</h5>
+                  <textarea
+                    name="task_details"
+                    value={form.task_details}
+                    onChange={handleChange}
+                    placeholder="Enter task details here..."
+                    required
+                  />
+                </div>
+                <div className="form-actions">
+                  <button type="submit" disabled={submitting}>
+                    {submitting ? "Saving..." : "Submit"}
+                  </button>
+                </div>
+              </div>
+            </form>
+            {success && <div className="popup">✅ Task added successfully!</div>}
+          </div>
 
-  <div
-    className={`summary-card completed ${taskFilter === "Completed" ? "active" : ""}`}
-    onClick={() => setTaskFilter("Completed")}
-  >
-    <h4>Completed</h4>
-    <p>{completedTasks}</p>
-  </div>
-</div>
-
+        </div>
 
         {/* Excel Download */}
         <div className="task-table-header">
-  
-  <button className="download-btn" onClick={exportToExcel}>
-    ⬇️ Download Excel
-  </button>
-</div>
-
+          <button className="download-btn" onClick={exportToExcel}>
+            ⬇️ Download Excel
+          </button>
+        </div>
 
         {/* Task Table */}
         <div className="task-list-containers">
@@ -446,7 +469,7 @@ function EmployeeDashboard() {
                 <th>Employee</th>
                 <th>Project</th>
                 <th>Module</th>
-                <th>Submodule</th>
+
                 <th>Task Details</th>
                 <th>Assigned At</th>
                 <th>Assigned From</th>
@@ -466,20 +489,21 @@ function EmployeeDashboard() {
                     <td>{task.emp_name} ({task.emp_code})</td>
                     <td>{task.project}</td>
                     <td>{task.module}</td>
-                    <td>{task.submodule}</td>
-                    <td>{task.task_details}</td>
+                    <td>{task.submodule}-{task.task_details}</td>
                     <td>{new Date(task.created_at).toLocaleString()}</td>
                     <td>{task.assigned_from}</td>
                     <td>
                       <select
                         value={task.status || "Pending"}
                         onChange={(e) => handleStatusChange(task.task_id, e.target.value)}
+                        style={{ backgroundColor: getStatusColor(task.status || "Pending") }}
                       >
                         <option value="Pending">Pending</option>
                         <option value="In Progress">In Progress</option>
                         <option value="Completed">Completed</option>
                       </select>
                     </td>
+
                     <td>
                       <button className="delete-btn" onClick={() => handleDeleteClick(task)}>
                         Delete
@@ -532,6 +556,7 @@ function EmployeeDashboard() {
           </div>
         )}
       </div>
+
       <Footer />
     </>
   );
