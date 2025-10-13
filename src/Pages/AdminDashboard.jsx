@@ -1,5 +1,6 @@
 import "./AdminDashboard.css";
 import * as XLSX from "xlsx";
+import DashboardHeader from "./DashboardHeader";
 import Footer from "./Footer";
 import Header from "./Header";
 import React, { useEffect, useState } from "react";
@@ -7,7 +8,6 @@ import TaskAssignForm from "./TaskAssignForm";
 import axios from "axios";
 import { saveAs } from "file-saver";
 import { useNavigate } from "react-router-dom";
-import DashboardHeader from "./DashboardHeader";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -428,7 +428,7 @@ export default function AdminDashboard() {
           <>
             <div className="table-header">
               <h3>Assigned Tasks</h3>
-              <button className="download-btn" onClick={exportTasksToExcel}>⬇️ Download Excel</button>
+            
             </div>
             <TaskAssignForm
               activePage={activePage}
