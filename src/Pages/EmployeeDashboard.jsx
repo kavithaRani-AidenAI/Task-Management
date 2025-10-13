@@ -64,7 +64,7 @@ function EmployeeDashboard() {
   const getStatusColor = (status) => {
   switch (status) {
     case "Pending":
-      return "red";
+      return "#F26F55";
     case "In Progress":
       return "orange";
     case "Completed":
