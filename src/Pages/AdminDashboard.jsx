@@ -437,7 +437,7 @@ export default function AdminDashboard() {
         {activePage === "tasks" && (
           <>
             <div className="table-header">
-              <h3>Assigned Tasks</h3>
+              
             
             </div>
             <TaskAssignForm
