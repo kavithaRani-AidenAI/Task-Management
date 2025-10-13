@@ -134,12 +134,13 @@ app.post("/api/login", async (req, res) => {
         created_at: adminUser.created_at,
         name: empResult.rows.length > 0 ? empResult.rows[0].name : null,
         department: empResult.rows.length > 0 ? empResult.rows[0].department : null,
+        position: empResult.rows.length > 0 ? empResult.rows[0].position : null,
       };
 
     } else {
       // Check employee table
       const empResult = await pool.query(
-        "SELECT emp_code, name, department, password FROM emp_details WHERE emp_code = $1",
+        "SELECT emp_code, name, department,position, password FROM emp_details WHERE emp_code = $1",
         [username]
       );
 
@@ -160,6 +161,7 @@ app.post("/api/login", async (req, res) => {
         role: role,
         name: empUser.name,
         department: empUser.department,
+        position:empUser.position,
         created_at: null,
       };
     }

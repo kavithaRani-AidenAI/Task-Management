@@ -205,6 +205,7 @@ if (role === "admin") {
         localStorage.setItem("admin", JSON.stringify({
           emp_code: user.emp_code, // ensure backend returns emp_code
           name: user.name,
+          position:user.position
           // add other fields if needed
         }));
         nav("/admin-dashboard");
