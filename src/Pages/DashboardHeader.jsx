@@ -8,7 +8,7 @@ export default function DashboardHeader({ currentUser }) {
   const [empDetails, setEmpDetails] = useState(null);
 
   useEffect(() => {
-  const empData = JSON.parse(localStorage.getItem("loggedEmployee"));
+ const empData = JSON.parse(localStorage.getItem("employee"));
   if (empData) {
     setEmpDetails(empData);
   }
@@ -51,13 +51,13 @@ export default function DashboardHeader({ currentUser }) {
     <div className="logo">
       <img src="/DS logo.JPG" alt="Company Logo" className="company-logo" />
       <div className="company-title">
-        <span className="company-name">Employee Task Management System</span>
+        <span className="company-name">Task Management System</span>
         {/* Centered employee info */}
-        {empDetails && (
-          <div className="employee-info">
-            {empDetails.name} ({empDetails.emp_code}) - {empDetails.designation}
-          </div>
-        )}
+     {currentUser && (
+  <div className="employee-info">
+    {currentUser.name}({currentUser.emp_code}) - {currentUser.position}
+  </div>
+)}
       </div>
     </div>
   </div>
