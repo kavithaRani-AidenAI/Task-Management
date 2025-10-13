@@ -4,9 +4,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { saveAs } from "file-saver";
 
-// TaskAssignForm.jsx
-
-export default function TaskAssignForm({setActivePage }) {
+export default function TaskAssignForm({ setActivePage, isSubmitting, setIsSubmitting }) {
   const [employees, setEmployees] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
@@ -15,8 +13,7 @@ export default function TaskAssignForm({setActivePage }) {
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
- 
-  //  const [activePage, setActivePage] = useState("dashboard");
+  const [success, setSuccess] = useState(false);
 
   // Form state
   const [form, setForm] = useState({
@@ -35,8 +32,6 @@ export default function TaskAssignForm({setActivePage }) {
     project: "",
     search: ""
   });
-
-  const [success, setSuccess] = useState(false);
 
   // -----------------------------
   // Initial Data Fetch
@@ -115,12 +110,26 @@ export default function TaskAssignForm({setActivePage }) {
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const admin = JSON.parse(localStorage.getItem("admin"));
-    const payload = { ...form, created_at: new Date().toISOString(),assigned_from: admin?.name,status: "Pending", };
 
+    if (isSubmitting) return; // Prevent multiple clicks
+    setIsSubmitting(true);
+
+    const admin = JSON.parse(localStorage.getItem("admin"));
+    const payload = {
+      ...form,
+      created_at: new Date().toISOString(),
+      assigned_from: admin?.name,
+      status: "Pending",
+    };
+
+    if (!form.emp_code || !form.project || !form.module || !form.submodule || !form.task_details) {
+      alert("Please fill all fields");
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       await axios.post("http://localhost:5000/api/tasks", payload);
@@ -132,11 +141,18 @@ export default function TaskAssignForm({setActivePage }) {
         submodule: "",
         task_details: "",
       });
-      setTimeout(() => setSuccess(false), 2500);
-      fetchTasks(); // refresh tasks
+
+      // Keep submit button disabled until success message disappears
+      setTimeout(() => {
+        setSuccess(false);
+        setIsSubmitting(false);
+      }, 2500);
+
+      fetchTasks();
     } catch (err) {
       alert("Error assigning task!");
       console.error(err);
+      setIsSubmitting(false);
     }
   };
 
@@ -145,16 +161,11 @@ export default function TaskAssignForm({setActivePage }) {
   // -----------------------------
   useEffect(() => {
     let result = [...tasks];
-
-    if (filter.employee) {
-      result = result.filter((t) => t.empname === filter.employee);
-    }
-    if (filter.project) {
-      result = result.filter((t) => t.project === filter.project);
-    }
+    if (filter.employee) result = result.filter(t => t.empname === filter.employee);
+    if (filter.project) result = result.filter(t => t.project === filter.project);
     if (filter.search) {
       result = result.filter(
-        (t) =>
+        t =>
           t.task_details.toLowerCase().includes(filter.search.toLowerCase()) ||
           t.module.toLowerCase().includes(filter.search.toLowerCase()) ||
           t.submodule.toLowerCase().includes(filter.search.toLowerCase())
@@ -168,8 +179,7 @@ export default function TaskAssignForm({setActivePage }) {
   // -----------------------------
   const formatToIST = (dateString) => {
     if (!dateString) return "-";
-    const date = new Date(dateString); // UTC from backend
-    // Add 5.5 hours to convert to IST
+    const date = new Date(dateString);
     const istDate = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
     return istDate.toLocaleString('en-IN', {
       day: '2-digit', month: '2-digit', year: 'numeric',
@@ -192,7 +202,6 @@ export default function TaskAssignForm({setActivePage }) {
       Employee: task.emp_name + " (" + task.emp_code + ")",
       Project: task.project,
       Module: task.module,
-      //Submodule: task.submodule,
       "Task Details": `${task.submodule || ""} --- ${task.task_details || ""}`,
       "Assigned At": formatToIST(task.created_at),
       "Assigned From": task.assigned_from,
@@ -209,25 +218,19 @@ export default function TaskAssignForm({setActivePage }) {
   };
 
   return (
-    <>    
-                    {/* 🔙 Back Button */}
-                <button className="back-btn" onClick={() => setActivePage("dashboard")}>
-                 ← Back to Dashboard
-                </button>
-      {/* Form Section */}
+    <>
+      <button className="back-btn" onClick={() => setActivePage("dashboard")}>
+        ← Back to Dashboard
+      </button>
+
       <div className="form-containers">
         <h3>Assign Task</h3>
         <hr />
         <form className="task-form" onSubmit={handleSubmit}>
-          {/* Row 1: Employee + Project */}
           <div className="form-row">
             <div className="form-group">
               <label className="lbl-align">Employee:</label>
-              <select
-                name="emp_code"
-                value={form.emp_code}
-                onChange={handleChange}
-              >
+              <select name="emp_code" value={form.emp_code} onChange={handleChange} required disabled={isSubmitting}>
                 <option value="">Select Employee</option>
                 {employees.map((emp) => (
                   <option key={emp.emp_code} value={emp.emp_code}>
@@ -236,14 +239,10 @@ export default function TaskAssignForm({setActivePage }) {
                 ))}
               </select>
             </div>
+
             <div className="form-group">
               <label className="lbl-align">Project:</label>
-              <select
-                name="project"
-                value={form.project}
-                onChange={handleChange}
-                required
-              >
+              <select name="project" value={form.project} onChange={handleChange} required disabled={isSubmitting}>
                 <option value="">-- Select Project --</option>
                 {projects.map((proj) => (
                   <option key={proj.project_id} value={proj.project_name}>
@@ -254,45 +253,31 @@ export default function TaskAssignForm({setActivePage }) {
             </div>
           </div>
 
-          {/* Row 2: Module + Submodule */}
           <div className="form-row">
             <div className="form-group">
               <label className="lbl-align">Module:</label>
-              <select name="module" value={form.module} onChange={handleChange} required>
+              <select name="module" value={form.module} onChange={handleChange} required disabled={isSubmitting}>
                 <option value="">-- Select Module --</option>
                 <option value="Module 1">Module 1</option>
                 <option value="Module 2">Module 2</option>
                 <option value="Module 3">Module 3</option>
               </select>
             </div>
-            <div className="form-group">
-              <input 
-                type="text"
-                name="submodule"
-                value={form.submodule}
-                onChange={handleChange}
-                placeholder="Enter Submodule"
-                required
-                />
-            </div>
 
+            <div className="form-group">
+              <input type="text" name="submodule" value={form.submodule} onChange={handleChange} placeholder="Enter Submodule" required disabled={isSubmitting} />
+            </div>
           </div>
 
-          {/* Row 3: Task Details */}
           <div className="form-group full-width">
             <label className="label-style">Remarks:</label>
-            <textarea
-              name="task_details"
-              value={form.task_details}
-              onChange={handleChange}
-              placeholder="Enter task details here..."
-              required
-            />
+            <textarea name="task_details" value={form.task_details} onChange={handleChange} placeholder="Enter task details here..." required disabled={isSubmitting} />
           </div>
 
-          {/* Row 4: Submit */}
           <div className="form-submit">
-            <button type="submit">Submit</button>
+            <button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : "Submit"}
+            </button>
           </div>
         </form>
 
@@ -335,11 +320,11 @@ export default function TaskAssignForm({setActivePage }) {
                   <td>{task.submodule} - {task.task_details}</td>
                   <td>{formatToIST(task.created_at)}</td>
                   <td>{task.assigned_from}</td>
-                  <td style={{color:task.status === "Pending"? "red": task.status === "In Progress"? "orange": "green",fontWeight: "bold"}}>
+                  <td style={{color:task.status === "Pending"? "red": task.status === "In Progress"? "orange": "green", fontWeight: "bold"}}>
                     {task.status}
                   </td>
                   <td>
-                    <button className="delete-btn" onClick={() => confirmDelete(task.task_id)}>Delete</button>
+                    <button className="delete-btn" onClick={() => confirmDelete(task.task_id)} disabled={isSubmitting}>Delete</button>
                   </td>
                 </tr>
               ))
@@ -347,7 +332,6 @@ export default function TaskAssignForm({setActivePage }) {
           </tbody>
         </table>
 
-        {/* Delete Modal */}
         {showDeleteModal && (
           <div className="modal-overlay">
             <div className="modal">
@@ -360,7 +344,6 @@ export default function TaskAssignForm({setActivePage }) {
           </div>
         )}
 
-        {/* Toast */}
         {showToast && <div className="toast">{toastMessage}</div>}
       </div>
     </>
