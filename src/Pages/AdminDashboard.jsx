@@ -7,6 +7,7 @@ import TaskAssignForm from "./TaskAssignForm";
 import axios from "axios";
 import { saveAs } from "file-saver";
 import { useNavigate } from "react-router-dom";
+import DashboardHeader from "./DashboardHeader";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -246,7 +247,7 @@ export default function AdminDashboard() {
 
   return (
     <>
-      <Header currentUser={null} />
+      <DashboardHeader currentUser={null} />
       <div className="container">
         {/* Nav bar */}
         <div className="nav-bars">

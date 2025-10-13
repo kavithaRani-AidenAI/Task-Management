@@ -7,12 +7,27 @@ export default function DashboardHeader({ currentUser }) {
   const navigate = useNavigate();
   const [empDetails, setEmpDetails] = useState(null);
 
-  useEffect(() => {
- const empData = JSON.parse(localStorage.getItem("employee"));
-  if (empData) {
-    setEmpDetails(empData);
-  }
-}, []);
+//   useEffect(() => {
+//  const empData = JSON.parse(localStorage.getItem("employee"));
+//   if (empData) {
+//     setEmpDetails(empData);
+//   }
+// }, []);
+
+
+ useEffect(() => {
+    // Try to get employee first
+    let userData = JSON.parse(localStorage.getItem("employee"));
+
+    // If no employee, try admin
+    if (!userData) {
+      userData = JSON.parse(localStorage.getItem("admin"));
+    }
+
+    if (userData) {
+      setEmpDetails(userData);
+    }
+  }, []);
 
   const handleLogout = () => {
   const confirmExit = window.confirm("Are you sure you want to exit?");
@@ -53,9 +68,15 @@ export default function DashboardHeader({ currentUser }) {
       <div className="company-title">
         <span className="company-name">Task Management System</span>
         {/* Centered employee info */}
-     {currentUser && (
+     {/* {currentUser && (
   <div className="employee-info">
-    {currentUser.name}({currentUser.emp_code}) - {currentUser.position}
+    {currentUser.name}({currentUser.emp_code}) - {currentUser.position} */}
+    {/* Employee/Admin Info */}
+            {(currentUser || empDetails) && (
+              <div className="employee-info">
+                {currentUser?.name || empDetails?.name} (
+                {currentUser?.emp_code || empDetails?.emp_code}){" "}
+                - {currentUser?.position || empDetails?.position}
   </div>
 )}
       </div>
