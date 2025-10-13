@@ -240,6 +240,10 @@ export default function AdminDashboard() {
         {/* Employees Section */}
         {activePage === "employees" && (
           <div>
+                {/* 🔙 Back Button */}
+                <button className="back-btn" onClick={() => setActivePage("dashboard")}>
+                 ← Back to Dashboard
+                </button>
             <form onSubmit={handleSubmit} className="empform">
               <h2>Add New Employee</h2><br />
               <input type="text" name="name" placeholder="Enter employee name" value={form.name} onChange={handleChange} required disabled={isSubmitting} />
@@ -300,7 +304,13 @@ export default function AdminDashboard() {
         {successMessage && <div className="success-popup">{successMessage}</div>}
 
         {/* Tasks */}
-        {activePage === "tasks" && <TaskAssignForm />}
+        {/* {activePage === "tasks" && <TaskAssignForm />} */}
+        {activePage === "tasks" && (
+  <TaskAssignForm
+    activePage={activePage}
+    setActivePage={setActivePage}
+  />
+)}
       </div>
       <Footer />
     </>

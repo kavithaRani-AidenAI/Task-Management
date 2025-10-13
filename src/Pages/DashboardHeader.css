@@ -2,8 +2,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: rgb(6, 6, 121); /* Bootstrap blue */
-  color: #fff;
+  background-color: white; /* Bootstrap blue */
+  color:  #e0a800;
   padding: 10px 20px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   position: sticky;
@@ -59,6 +59,7 @@
              
         }
 .company-name {
+  margin-left: 370px;
   font-size: clamp(14px, 2vw, 20px);
   font-weight: bold;
   white-space: nowrap;

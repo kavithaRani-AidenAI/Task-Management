@@ -1,9 +1,18 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import "./DashboardHeader.css"; // we'll add styling here
+import "./DashboardHeader.css"; 
+import { useEffect, useState } from "react";// we'll add styling here
 
 export default function DashboardHeader({ currentUser }) {
   const navigate = useNavigate();
+  const [empDetails, setEmpDetails] = useState(null);
+
+  useEffect(() => {
+  const empData = JSON.parse(localStorage.getItem("loggedEmployee"));
+  if (empData) {
+    setEmpDetails(empData);
+  }
+}, []);
 
   const handleLogout = () => {
   const confirmExit = window.confirm("Are you sure you want to exit?");
@@ -15,26 +24,51 @@ export default function DashboardHeader({ currentUser }) {
 };
 
   return (
-    <header className="header-container">
-      {/* Left: Company Logo */}
-      <div className="header-left">
-          <div className="logo">
-              <img src="/DS logo.JPG" alt="Company Logo" className="company-logo" />
-              <span className="company-name">Employee Task Management System</span>
-          </div>
-        
+    // <header className="header-container">
+    //   {/* Left: Company Logo */}
+    //   <div className="header-left">
+    //       <div className="logo">
+    //           <img src="/DS logo.JPG" alt="Company Logo" className="company-logo" />
+    //           <span className="company-name">Employee Task Management System</span>
+              
+    //       </div>
+      
        
-      </div>
+    //   </div>
 
-      {/* Right: User info + Logout */}
-      <div className="header-right">
-        {currentUser && (
-          <span className="user-name">Welcome, {currentUser.name}</span>
+    //   {/* Right: User info + Logout */}
+    //   <div className="header-right">
+        
+    //     <button className="logout-btn" onClick={handleLogout}>
+    //       Logout
+    //     </button>
+    //   </div>
+    // </header>
+
+    <header className="header-container">
+  {/* Left: Company Logo */}
+  <div className="header-left">
+    <div className="logo">
+      <img src="/DS logo.JPG" alt="Company Logo" className="company-logo" />
+      <div className="company-title">
+        <span className="company-name">Employee Task Management System</span>
+        {/* Centered employee info */}
+        {empDetails && (
+          <div className="employee-info">
+            {empDetails.name} ({empDetails.emp_code}) - {empDetails.designation}
+          </div>
         )}
-        <button className="logout-btn" onClick={handleLogout}>
-          Logout
-        </button>
       </div>
-    </header>
+    </div>
+  </div>
+
+  {/* Right: User info + Logout */}
+  <div className="header-right">
+    <button className="logout-btn" onClick={handleLogout}>
+      Logout
+    </button>
+  </div>
+</header>
+
   );
 }
