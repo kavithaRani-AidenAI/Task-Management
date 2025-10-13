@@ -455,8 +455,8 @@ function EmployeeDashboard() {
         </div>
 
         {/* Excel Download */}
-        <div className="task-table-header">
-          <button className="download-btn" onClick={exportToExcel}>
+        <div className="excel-header">
+          <button className="exceldownload-btn" onClick={exportToExcel}>
             ⬇️ Download Excel
           </button>
         </div>

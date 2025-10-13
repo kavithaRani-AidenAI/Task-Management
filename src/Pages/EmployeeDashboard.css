@@ -522,7 +522,7 @@ text-align: left;
     margin-top:0px;
 }
 /* Excel Download Button */
-.download-btn {
+/* .download-btn {
   display: inline-block;
   margin:0;
   background-color: #007bff;
@@ -536,17 +536,35 @@ text-align: left;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
  
+} */
+
+.excel-header {
+  width: 100%;                  /* take full row width */
+  display: flex;                /* enable flexbox */
+  justify-content: flex-end;    /* push button to right side */
+  align-items: center;          /* vertical centering */
+  padding: 0px 20px;
+  box-sizing: border-box;  
 }
 
+/* Button Styling */
+.exceldownload-btn {
+  margin-bottom: -14px;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
 
-.download-btn:hover {
-  background-color: #0056b3;
+.exceldownload-btn:hover {
+  background-color: #218838; /* Slightly darker on hover */
   transform: translateY(-1px);
-}
-
-.download-btn:active {
-  transform: scale(0.98);
-  
 }
 
 /* Task Header Layout */
