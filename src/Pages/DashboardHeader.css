@@ -58,14 +58,34 @@
              height: 71px;
              
         }
-.company-name {
-  margin-left: 370px;
-  font-size: clamp(14px, 2vw, 20px);
-  font-weight: bold;
-  white-space: nowrap;
-  /* overflow: hidden; */
-  text-overflow: ellipsis;
-  line-height: 3; 
-  align-items: center;
+        .company-name {
+          color: black;
+          margin-left: 370px;
+          font-size:22px;
+          font-weight: bold;
+          white-space: nowrap;
+          /* overflow: hidden; */
+          text-overflow: ellipsis;
+          line-height: 3; 
+          align-items: center;
+        }
+
+.company-title {
+  display: flex;
+  flex-direction: column; /* stack company name and employee info vertically */
+  align-items: center;    /* center horizontally */
+  text-align: center;     /* center text inside */
+  margin-left: 10px;      /* optional spacing from logo */
+}
+
+.employee-info {
+    align-items: center;
+    text-align: center;
+    margin-left: 360px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #1e0ce9;
+    margin-top: -12px;
+    text-transform: uppercase;       /* spacing below company name */
 }
 
