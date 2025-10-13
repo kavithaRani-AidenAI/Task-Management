@@ -419,14 +419,17 @@ function EmployeeDashboard() {
                   </select>
                 </div>
                 <div className="form-group">
-                  <h5 className="sub-style">Submodule:</h5>
-                  <select name="submodule" value={form.submodule} onChange={handleChange} required>
-                    <option value="">-- Select Submodule --</option>
-                    <option value="Submodule A">Submodule A</option>
-                    <option value="Submodule B">Submodule B</option>
-                    <option value="Submodule C">Submodule C</option>
-                  </select>
-                </div>
+                    <h5 className="sub-style">Submodule:</h5>
+                    <input
+                      type="text"
+                      name="submodule"
+                      value={form.submodule}
+                      onChange={handleChange}
+                      placeholder="Enter submodule"
+                      required
+                    />
+                  </div>
+
                 <div className="form-group full-width">
                   <h5 className="rem-style">Remarks:</h5>
                   <textarea
