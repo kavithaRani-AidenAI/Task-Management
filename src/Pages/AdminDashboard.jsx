@@ -8,6 +8,7 @@ import TaskAssignForm from "./TaskAssignForm";
 import axios from "axios";
 import { saveAs } from "file-saver";
 import { useNavigate } from "react-router-dom";
+import Task from "./Task";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -316,52 +317,12 @@ export default function AdminDashboard() {
                 </table>
               </div>
             )}
-
-            {(filterCard === "totalTasks" || filterCard === "pendingTasks") && (
-              <div className="tasks-table-wrapper">
-                <h3>{filterCard === "totalTasks" ? "All Tasks" : "Pending Tasks"}</h3>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>S.No</th>
-                      <th>Employee Name (ID)</th>
-                      <th>Designation</th>
-                      <th>No. of Tasks</th>
-                      <th>Current Day Tasks</th>
-                      <th>Previous Tasks</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {employees.map((emp, idx) => {
-                      const empTasks = tasks.filter(task => task.assigned_to && String(task.assigned_to) === String(emp.emp_code));
-                      const filteredTasks = filterCard === "pendingTasks"
-                        ? empTasks.filter(t => t.status !== "Completed")
-                        : empTasks;
-
-                      const currentDayTasks = filteredTasks.filter(
-                        t => t.due_date && t.due_date.slice(0,10) === todayDate
-                      );
-                      const previousTasks = filteredTasks.filter(
-                        t => t.due_date && t.due_date.slice(0,10) < todayDate
-                      );
-
-                      return (
-                        <tr key={emp.id}>
-                          <td>{idx + 1}</td>
-                          <td>{emp.name} ({emp.emp_code})</td>
-                          <td>{emp.position}</td>
-                          <td>{filteredTasks.length}</td>
-                          <td>{currentDayTasks.length}</td>
-                          <td>{previousTasks.length}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
+            {filterCard === "totalTasks" && (
+            <div className="tasks-wrapper">
+                <Task />
+                  </div>
+                  )}</div>
+                )}
 
         {/* Employees Section */}
         {activePage === "employees" && (

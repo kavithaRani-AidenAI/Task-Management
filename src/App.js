@@ -3,11 +3,12 @@ import AdminLogin from "./Pages/AdminLogin";
 import EmployeeDashboard from "./Pages/EmployeeDashboard";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import TaskAssignForm from "./Pages/TaskAssignForm";
+import Task from "./Pages/Task";
 
 function App() {
   return (
     <Router>
-      <Routes>
+    <Routes>
         {/* Admin login page */}
        <Route path="/" element={<AdminLogin />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
@@ -16,6 +17,8 @@ function App() {
       </Routes>
     </Router>
   );
-}
+} 
+
+
 
 export default App;
