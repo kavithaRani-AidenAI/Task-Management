@@ -388,3 +388,92 @@ input, select, button {
 .back-btn:hover {
   background-color: #0056b3;
 }
+/* -------------------------
+   Table Wrapper
+-------------------------- */
+.employee-table-wrapper,
+.tasks-table-wrapper {
+  margin-top: 20px;
+  overflow-x: auto;
+}
+
+/* -------------------------
+   Tables
+-------------------------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+thead {
+  background-color: #f0f0f0;
+}
+
+thead th {
+  padding: 12px 10px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #ddd;
+}
+
+tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  color: #555;
+}
+
+tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: #dc3545;
+  color: #fff;
+  font-size: 12px;
+  transition: 0.2s;
+}
+
+button:hover {
+  background-color: #c82333;
+}
+
+/* Table Header with Download Button */
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.table-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.download-btn {
+  padding: 6px 12px;
+  background-color: #007bff;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.download-btn:hover {
+  background-color: #0056b3;
+}

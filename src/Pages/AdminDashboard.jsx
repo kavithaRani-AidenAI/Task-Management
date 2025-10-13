@@ -19,6 +19,7 @@ export default function AdminDashboard() {
   });
 
   const [activePage, setActivePage] = useState("dashboard");
+  const [filterCard, setFilterCard] = useState(""); // "", "totalEmployees", "totalTasks", "pendingTasks"
   const [employees, setEmployees] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [successMessage, setSuccessMessage] = useState("");
@@ -181,9 +182,9 @@ export default function AdminDashboard() {
   // -----------------------------
   // Page Switches
   // -----------------------------
-  const showDashboard = () => setActivePage("dashboard");
-  const showEmployees = () => { fetchEmployees(); setActivePage("employees"); };
-  const showTasks = () => { fetchTasks(); setActivePage("tasks"); };
+  const showDashboard = () => { setActivePage("dashboard"); setFilterCard(""); };
+  const showEmployees = () => { fetchEmployees(); setActivePage("employees"); setFilterCard(""); };
+  const showTasks = () => { fetchTasks(); setActivePage("tasks"); setFilterCard(""); };
 
   // -----------------------------
   // Excel Export
@@ -234,15 +235,18 @@ export default function AdminDashboard() {
   };
 
   // -----------------------------
-  // Active Employees Count (fixed)
+  // Active Employees Count
   // -----------------------------
   const activeEmployeesCount = employees.filter(emp => {
-    // Ensure both sides are strings for correct matching
-    const empTasks = tasks.filter(task => String(task.assigned_to) === String(emp.emp_code));
+    const empTasks = tasks.filter(task => task.assigned_to && String(task.assigned_to) === String(emp.emp_code));
     if (empTasks.length === 0) return true; // no tasks assigned
-    const completedTasks = empTasks.filter(task => task.status === "Completed").length;
-    return completedTasks === empTasks.length; // all tasks completed
+    return empTasks.every(task => task.status === "Completed");
   }).length;
+
+  // -----------------------------
+  // Today Date
+  // -----------------------------
+  const todayDate = new Date().toISOString().slice(0, 10);
 
   return (
     <>
@@ -263,26 +267,97 @@ export default function AdminDashboard() {
           <div className="dashboard-section">
             <h3>Welcome, Admin!</h3>
             <div className="stats-container">
-              <div className="stat-card total-employees">
+              <div className="stat-card total-employees" onClick={() => setFilterCard("totalEmployees")}>
                 <div className="stat-title">Total Employees</div>
                 <div className="stat-value">{stats.totalEmployees}</div>
               </div>
 
-              <div className="stat-card total-tasks">
+              <div className="stat-card total-tasks" onClick={() => setFilterCard("totalTasks")}>
                 <div className="stat-title">Total Tasks</div>
                 <div className="stat-value">{stats.totalTasks}</div>
               </div>
 
-              <div className="stat-card pending-tasks">
+              <div className="stat-card pending-tasks" onClick={() => setFilterCard("pendingTasks")}>
                 <div className="stat-title">Pending Tasks</div>
                 <div className="stat-value">{stats.pendingTasks}</div>
               </div>
 
-              <div className="stat-card active-employees">
+              <div className="stat-card active-employees" onClick={() => setFilterCard("activeEmployees")}>
                 <div className="stat-title">Active Employees</div>
                 <div className="stat-value">{activeEmployeesCount}</div>
               </div>
             </div>
+
+            {/* Dynamic Table Below Cards */}
+            {filterCard === "totalEmployees" && (
+              <div className="employee-table-wrapper">
+                <h3>All Employees</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>S.No</th>
+                      <th>Employee Name (ID)</th>
+                      <th>Designation</th>
+                      <th>Department</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {employees.map((emp, idx) => (
+                      <tr key={emp.id}>
+                        <td>{idx + 1}</td>
+                        <td>{emp.name} ({emp.emp_code})</td>
+                        <td>{emp.position}</td>
+                        <td>{emp.department}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {(filterCard === "totalTasks" || filterCard === "pendingTasks") && (
+              <div className="tasks-table-wrapper">
+                <h3>{filterCard === "totalTasks" ? "All Tasks" : "Pending Tasks"}</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>S.No</th>
+                      <th>Employee Name (ID)</th>
+                      <th>Designation</th>
+                      <th>No. of Tasks</th>
+                      <th>Current Day Tasks</th>
+                      <th>Previous Tasks</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {employees.map((emp, idx) => {
+                      const empTasks = tasks.filter(task => task.assigned_to && String(task.assigned_to) === String(emp.emp_code));
+                      const filteredTasks = filterCard === "pendingTasks"
+                        ? empTasks.filter(t => t.status !== "Completed")
+                        : empTasks;
+
+                      const currentDayTasks = filteredTasks.filter(
+                        t => t.due_date && t.due_date.slice(0,10) === todayDate
+                      );
+                      const previousTasks = filteredTasks.filter(
+                        t => t.due_date && t.due_date.slice(0,10) < todayDate
+                      );
+
+                      return (
+                        <tr key={emp.id}>
+                          <td>{idx + 1}</td>
+                          <td>{emp.name} ({emp.emp_code})</td>
+                          <td>{emp.position}</td>
+                          <td>{filteredTasks.length}</td>
+                          <td>{currentDayTasks.length}</td>
+                          <td>{previousTasks.length}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
