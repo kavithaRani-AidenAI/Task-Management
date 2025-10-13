@@ -6,7 +6,7 @@ import { saveAs } from "file-saver";
 
 // TaskAssignForm.jsx
 
-export default function TaskAssignForm() {
+export default function TaskAssignForm({setActivePage }) {
   const [employees, setEmployees] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
@@ -15,6 +15,8 @@ export default function TaskAssignForm() {
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+ 
+  //  const [activePage, setActivePage] = useState("dashboard");
 
   // Form state
   const [form, setForm] = useState({
@@ -207,7 +209,11 @@ export default function TaskAssignForm() {
   };
 
   return (
-    <>
+    <>    
+                    {/* 🔙 Back Button */}
+                <button className="back-btn" onClick={() => setActivePage("dashboard")}>
+                 ← Back to Dashboard
+                </button>
       {/* Form Section */}
       <div className="form-containers">
         <h3>Assign Task</h3>

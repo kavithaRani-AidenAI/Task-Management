@@ -2,8 +2,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: rgb(6, 6, 121); /* Bootstrap blue */
-  color: #fff;
+  background-color: white; /* Bootstrap blue */
+  color:  #e0a800;
   padding: 10px 20px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   position: sticky;
@@ -58,13 +58,34 @@
              height: 71px;
              
         }
-.company-name {
-  font-size: clamp(14px, 2vw, 20px);
-  font-weight: bold;
-  white-space: nowrap;
-  /* overflow: hidden; */
-  text-overflow: ellipsis;
-  line-height: 3; 
-  align-items: center;
+        .company-name {
+          color: black;
+          margin-left: 370px;
+          font-size:22px;
+          font-weight: bold;
+          white-space: nowrap;
+          /* overflow: hidden; */
+          text-overflow: ellipsis;
+          line-height: 3; 
+          align-items: center;
+        }
+
+.company-title {
+  display: flex;
+  flex-direction: column; /* stack company name and employee info vertically */
+  align-items: center;    /* center horizontally */
+  text-align: center;     /* center text inside */
+  margin-left: 10px;      /* optional spacing from logo */
+}
+
+.employee-info {
+    align-items: center;
+    text-align: center;
+    margin-left: 360px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #1e0ce9;
+    margin-top: -12px;
+    text-transform: uppercase;       /* spacing below company name */
 }
 
