@@ -20,6 +20,7 @@ export default function AdminDashboard() {
 
   const [activePage, setActivePage] = useState("dashboard");
   const [employees, setEmployees] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -44,14 +45,24 @@ export default function AdminDashboard() {
           email: emp.email ?? "",
           department: emp.department ?? "",
           position: emp.position ?? "",
-          tasks_assigned: emp.tasks_assigned ?? 0,
-          tasks_completed: emp.tasks_completed ?? 0,
           id: uniqueId,
         };
       });
       setEmployees(normalized);
     } catch (err) {
       console.error("Error fetching employees:", err);
+    }
+  };
+
+  // -----------------------------
+  // Fetch Tasks
+  // -----------------------------
+  const fetchTasks = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/tasks");
+      setTasks(res.data ?? []);
+    } catch (err) {
+      console.error("Error fetching tasks:", err);
     }
   };
 
@@ -99,6 +110,7 @@ export default function AdminDashboard() {
   // -----------------------------
   useEffect(() => {
     fetchEmployees();
+    fetchTasks();
     fetchStats();
   }, []);
 
@@ -127,8 +139,6 @@ export default function AdminDashboard() {
         email: res.data.email ?? "",
         department: res.data.department ?? "",
         position: res.data.position ?? "",
-        tasks_assigned: res.data.tasks_assigned ?? 0,
-        tasks_completed: res.data.tasks_completed ?? 0,
         id: res.data.id ?? res.data.emp_code ?? crypto.randomUUID(),
       };
       setEmployees(prev => [...prev, newEmp]);
@@ -136,7 +146,7 @@ export default function AdminDashboard() {
       setActivePage("employees");
       setSuccessMessage("Employee added successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);
-      fetchStats(); // update dashboard stats
+      fetchStats();
     } catch (err) {
       console.error("Error adding employee:", err);
     } finally {
@@ -151,7 +161,7 @@ export default function AdminDashboard() {
     try {
       await axios.delete(`http://localhost:5000/api/emp_details/${id}`);
       fetchEmployees();
-      fetchStats(); // update stats after deletion
+      fetchStats();
     } catch (err) {
       console.error("Error deleting employee:", err);
     }
@@ -173,12 +183,12 @@ export default function AdminDashboard() {
   // -----------------------------
   const showDashboard = () => setActivePage("dashboard");
   const showEmployees = () => { fetchEmployees(); setActivePage("employees"); };
-  const showTasks = () => setActivePage("tasks");
+  const showTasks = () => { fetchTasks(); setActivePage("tasks"); };
 
   // -----------------------------
   // Excel Export
   // -----------------------------
-  const exportToExcel = () => {
+  const exportEmployeesToExcel = () => {
     if (employees.length === 0) {
       alert("No data to export!");
       return;
@@ -189,8 +199,6 @@ export default function AdminDashboard() {
       Email: emp.email,
       Department: emp.department,
       Position: emp.position,
-      "Tasks Assigned": emp.tasks_assigned,
-      "Tasks Completed": emp.tasks_completed,
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(worksheetData);
@@ -201,6 +209,40 @@ export default function AdminDashboard() {
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, `Employees_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
+
+  const exportTasksToExcel = () => {
+    if (tasks.length === 0) {
+      alert("No task data to export!");
+      return;
+    }
+    const worksheetData = tasks.map(task => ({
+      "Task ID": task.id,
+      Title: task.title,
+      Description: task.description,
+      AssignedTo: task.assigned_to,
+      Status: task.status,
+      DueDate: task.due_date,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tasks");
+
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(data, `Tasks_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+
+  // -----------------------------
+  // Active Employees Count (fixed)
+  // -----------------------------
+  const activeEmployeesCount = employees.filter(emp => {
+    // Ensure both sides are strings for correct matching
+    const empTasks = tasks.filter(task => String(task.assigned_to) === String(emp.emp_code));
+    if (empTasks.length === 0) return true; // no tasks assigned
+    const completedTasks = empTasks.filter(task => task.status === "Completed").length;
+    return completedTasks === empTasks.length; // all tasks completed
+  }).length;
 
   return (
     <>
@@ -221,17 +263,24 @@ export default function AdminDashboard() {
           <div className="dashboard-section">
             <h3>Welcome, Admin!</h3>
             <div className="stats-container">
-              <div className="stat-card">
+              <div className="stat-card total-employees">
                 <div className="stat-title">Total Employees</div>
                 <div className="stat-value">{stats.totalEmployees}</div>
               </div>
-              <div className="stat-card">
+
+              <div className="stat-card total-tasks">
                 <div className="stat-title">Total Tasks</div>
                 <div className="stat-value">{stats.totalTasks}</div>
               </div>
-              <div className="stat-card">
+
+              <div className="stat-card pending-tasks">
                 <div className="stat-title">Pending Tasks</div>
                 <div className="stat-value">{stats.pendingTasks}</div>
+              </div>
+
+              <div className="stat-card active-employees">
+                <div className="stat-title">Active Employees</div>
+                <div className="stat-value">{activeEmployeesCount}</div>
               </div>
             </div>
           </div>
@@ -240,10 +289,9 @@ export default function AdminDashboard() {
         {/* Employees Section */}
         {activePage === "employees" && (
           <div>
-                {/* 🔙 Back Button */}
-                <button className="back-btn" onClick={() => setActivePage("dashboard")}>
-                 ← Back to Dashboard
-                </button>
+            <button className="back-btn" onClick={() => setActivePage("dashboard")}>
+              ← Back to Dashboard
+            </button>
             <form onSubmit={handleSubmit} className="empform">
               <h2>Add New Employee</h2><br />
               <input type="text" name="name" placeholder="Enter employee name" value={form.name} onChange={handleChange} required disabled={isSubmitting} />
@@ -262,7 +310,7 @@ export default function AdminDashboard() {
 
             <div className="table-header">
               <h3>Employee List</h3>
-              <button className="download-btn" onClick={exportToExcel}>⬇️ Download Excel</button>
+              <button className="download-btn" onClick={exportEmployeesToExcel}>⬇️ Download Excel</button>
             </div>
 
             <div className="employee-table-wrapper">
@@ -274,8 +322,6 @@ export default function AdminDashboard() {
                     <th>Email</th>
                     <th>Department</th>
                     <th>Position</th>
-                    <th>Tasks Assigned</th>
-                    <th>Tasks Completed</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -287,8 +333,6 @@ export default function AdminDashboard() {
                       <td>{emp.email}</td>
                       <td>{emp.department}</td>
                       <td>{emp.position}</td>
-                      <td>{emp.tasks_assigned}</td>
-                      <td>{emp.tasks_completed}</td>
                       <td>
                         <button onClick={() => deleteEmployee(emp.id)}>Delete</button>
                       </td>
@@ -303,14 +347,20 @@ export default function AdminDashboard() {
         {/* Success message */}
         {successMessage && <div className="success-popup">{successMessage}</div>}
 
-        {/* Tasks */}
-        {/* {activePage === "tasks" && <TaskAssignForm />} */}
+        {/* Tasks Section */}
         {activePage === "tasks" && (
-  <TaskAssignForm
-    activePage={activePage}
-    setActivePage={setActivePage}
-  />
-)}
+          <>
+            <div className="table-header">
+              <h3>Assigned Tasks</h3>
+              <button className="download-btn" onClick={exportTasksToExcel}>⬇️ Download Excel</button>
+            </div>
+            <TaskAssignForm
+              activePage={activePage}
+              setActivePage={setActivePage}
+              tasks={tasks}
+            />
+          </>
+        )}
       </div>
       <Footer />
     </>
