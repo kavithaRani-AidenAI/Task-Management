@@ -64,15 +64,17 @@ function EmployeeDashboard() {
   const getStatusColor = (status) => {
   switch (status) {
     case "Pending":
-      return "#F26F55";
+      return "#FF6B6B"; // vivid coral red
     case "In Progress":
-      return "orange";
+      return "#FFD93D"; // rich golden yellow
     case "Completed":
-      return "lightgreen";
+      return "#4CAF50"; // strong green
     default:
       return "white";
   }
 };
+
+
 
 
   // Fetch tasks
