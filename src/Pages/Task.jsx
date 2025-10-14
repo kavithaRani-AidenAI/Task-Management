@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./TaskAssignForm.css";
 
-function Task() {
+function Task(props) {
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [employees, setEmployees] = useState([]);
@@ -89,6 +89,9 @@ function Task() {
       hour12: true
     });
   };
+  const pendingTasks = tasks.filter(task => task.status === "Pending");
+  // Decide which tasks to show
+  const displayedTasks = props.taskType === "pendingTasks" ? pendingTasks : filteredTasks;
 
   return (
     <div className="task-list-container">
@@ -96,36 +99,10 @@ function Task() {
 
       {/* Filters */}
       <div className="filters">
-        <select
-          value={filter.employee}
-          onChange={(e) => setFilter({ ...filter, employee: e.target.value })}
-        >
-          <option value="">All Employees</option>
-          {employees.map((emp) => (
-            <option key={emp.emp_code} value={emp.name}>
-              {emp.name}
-            </option>
-          ))}
-        </select>
+        
 
-        <select
-          value={filter.project}
-          onChange={(e) => setFilter({ ...filter, project: e.target.value })}
-        >
-          <option value="">All Projects</option>
-          {projects.map((proj) => (
-            <option key={proj.id} value={proj.name}>
-              {proj.name}
-            </option>
-          ))}
-        </select>
-
-        <input
-          type="text"
-          placeholder="Search tasks..."
-          value={filter.search}
-          onChange={(e) => setFilter({ ...filter, search: e.target.value })}
-        />
+        
+        
       </div>
 
       {/* Tasks Table */}
@@ -143,14 +120,14 @@ function Task() {
           </tr>
         </thead>
         <tbody>
-          {filteredTasks.length === 0 ? (
+          {displayedTasks.length === 0 ? (
             <tr>
               <td colSpan="8" style={{ textAlign: "center" }}>
                 No tasks found
               </td>
             </tr>
           ) : (
-            filteredTasks.map((task) => (
+            displayedTasks.map((task) => (
               <tr key={task.task_id}>
                 <td>{task.task_id}</td>
                 <td>

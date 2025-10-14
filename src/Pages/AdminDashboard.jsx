@@ -10,6 +10,7 @@ import { saveAs } from "file-saver";
 import { useNavigate } from "react-router-dom";
 import Task from "./Task";
 
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
@@ -319,10 +320,17 @@ export default function AdminDashboard() {
             )}
             {filterCard === "totalTasks" && (
             <div className="tasks-wrapper">
-                <Task />
+                <Task  taskType="totalTasks"/>
+
                   </div>
                   )}</div>
                 )}
+            {filterCard === "pendingTasks" && (
+            <div className="tasks-wrapper">
+                <Task taskType="pendingTasks"/> 
+                  </div>
+                  )}
+                
 
         {/* Employees Section */}
         {activePage === "employees" && (
