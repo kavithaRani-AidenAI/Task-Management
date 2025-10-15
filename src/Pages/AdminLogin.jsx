@@ -273,7 +273,7 @@ if (role === "admin") {
 
               <div className="form-group">
                 <h4 className="heading">Username</h4>
-                <input type="text" value={username} onChange={handleUsernameChange} placeholder="Enter Emp ID" required />
+                <input type="text" value={username} onChange={handleUsernameChange} placeholder="Enter Your Employee ID" required />
                 {usernameErr && <p className="error">{usernameErr}</p>}
               </div>
 
@@ -310,11 +310,11 @@ if (role === "admin") {
                 <h4 className="mobile-heading">Mobile Number</h4>
                 <input type="tel" value={mobile} onChange={handleMobileChange} placeholder="Enter mobile number" maxLength="10" required />
                 {err && <p className="error">{err}</p>}
-                <button className="btn" type="submit" disabled={loading} aria-busy={loading}>
+                {/* <button className="btn" type="submit" disabled={loading} aria-busy={loading}>
                   {loading ? "Logging in..." : "Login"}
-                </button>
+                </button> */}
               </div>
-              <button className="btns" onClick={sendOtp} disabled={mobile.length !== 10}>{otpSent ? "Login" : "Send OTP"}</button>
+              <button className="btns" onClick={sendOtp} disabled={mobile.length !== 10}>{otpSent ? "Login" : "Send OTP"}</button> 
 
               {otpSent && (
                 <div className="otp-section">
