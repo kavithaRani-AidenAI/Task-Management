@@ -4,7 +4,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { saveAs } from "file-saver";
 
-export default function TaskAssignForm({ setActivePage, isSubmitting, setIsSubmitting }) {
+export default function TaskAssignForm({ setActivePage }) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+ 
   const [employees, setEmployees] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
