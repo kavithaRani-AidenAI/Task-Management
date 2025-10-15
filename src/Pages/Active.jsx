@@ -1,47 +1,59 @@
 import React, { useState, useEffect } from 'react';
 
-const Active = () => {
+const Active = ({ employees: employeesProp, tasks: tasksProp }) => {
   const [activeEmployees, setActiveEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchActiveEmployees();
-  }, []);
+    const computeFromProps = () => {
+      try {
+        const employees = Array.isArray(employeesProp) ? employeesProp : [];
+        const allTasks = Array.isArray(tasksProp) ? tasksProp : [];
+        const employeesWithTasks = employees.map(employee => {
+          const employeeTasks = allTasks.filter(task => task.emp_code === employee.emp_code);
+          const allTasksCompleted = employeeTasks.length > 0 && employeeTasks.every(task => task.status === 'Completed');
+          return { ...employee, tasks: employeeTasks, isActive: allTasksCompleted };
+        });
+        const activeEmployeesList = employeesWithTasks.filter(emp => emp.isActive);
+        setActiveEmployees(activeEmployeesList);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error computing active employees:', err);
+        setError('Failed to compute active employees.');
+        setLoading(false);
+      }
+    };
+
+    if (Array.isArray(employeesProp) && Array.isArray(tasksProp)) {
+      // Use pre-fetched data for instant render
+      setLoading(true);
+      computeFromProps();
+    } else {
+      // Fallback to fetching if props not provided
+      fetchActiveEmployees();
+    }
+  }, [employeesProp, tasksProp]);
 
   const fetchActiveEmployees = async () => {
     try {
       setLoading(true);
-      
-      // Fetch all employees
-      const empResponse = await fetch('http://localhost:5000/api/employees');
+
+      const [empResponse, tasksResponse] = await Promise.all([
+        fetch('http://localhost:5000/api/employees'),
+        fetch('http://localhost:5000/api/tasks')
+      ]);
+
       const employees = await empResponse.json();
-      
-      // Fetch all tasks
-      const tasksResponse = await fetch('http://localhost:5000/api/tasks');
       const allTasks = await tasksResponse.json();
-      
-      // Process employees to include their tasks and check active status
+
       const employeesWithTasks = employees.map(employee => {
-        // Get all tasks assigned to this employee
-        const employeeTasks = allTasks.filter(task => 
-          task.emp_code === employee.emp_code
-        );
-        
-        // Check if all tasks are completed
-        const allTasksCompleted = employeeTasks.length > 0 && 
-          employeeTasks.every(task => task.status === 'Completed');
-        
-        return {
-          ...employee,
-          tasks: employeeTasks,
-          isActive: allTasksCompleted
-        };
+        const employeeTasks = allTasks.filter(task => task.emp_code === employee.emp_code);
+        const allTasksCompleted = employeeTasks.length > 0 && employeeTasks.every(task => task.status === 'Completed');
+        return { ...employee, tasks: employeeTasks, isActive: allTasksCompleted };
       });
-      
-      // Filter to only show active employees
+
       const activeEmployeesList = employeesWithTasks.filter(emp => emp.isActive);
-      
       setActiveEmployees(activeEmployeesList);
       setLoading(false);
     } catch (err) {

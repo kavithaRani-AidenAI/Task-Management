@@ -3,7 +3,7 @@ import axios from "axios";
 import "./TaskAssignForm.css";
 
 function Task(props) {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState(Array.isArray(props.tasks) ? props.tasks : []);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -15,12 +15,17 @@ function Task(props) {
     search: ""
   });
 
-  // Fetch data on component mount
+  // Initialize from props if provided, otherwise fetch
   useEffect(() => {
-    fetchTasks();
-    fetchEmployees();
-    fetchProjects();
-  }, []);
+    if (Array.isArray(props.tasks) && props.tasks.length >= 0) {
+      setTasks(props.tasks);
+      setFilteredTasks(props.tasks);
+    } else {
+      fetchTasks();
+    }
+    // Only fetch employees/projects if we actually render filters (currently hidden)
+    // Skipping these extra requests improves perceived load when opened from cards
+  }, [props.tasks]);
 
   const fetchTasks = async () => {
     try {
@@ -32,23 +37,9 @@ function Task(props) {
     }
   };
 
-  const fetchEmployees = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/employees");
-      setEmployees(res.data);
-    } catch (err) {
-      console.error("Error fetching employees:", err);
-    }
-  };
-
-  const fetchProjects = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/projects");
-      setProjects(res.data);
-    } catch (err) {
-      console.error("Error fetching projects:", err);
-    }
-  };
+  // Note: employees and projects fetching is disabled to avoid delays when opening from cards
+  const fetchEmployees = async () => {};
+  const fetchProjects = async () => {};
 
   // Filter tasks based on employee, project, and search
   useEffect(() => {
@@ -90,12 +81,17 @@ function Task(props) {
     });
   };
   const pendingTasks = tasks.filter(task => task.status === "Pending");
+  const completedTasks = tasks.filter(task => task.status === "Completed");
   // Decide which tasks to show
-  const displayedTasks = props.taskType === "pendingTasks" ? pendingTasks : filteredTasks;
+  const displayedTasks = props.taskType === "pendingTasks"
+    ? pendingTasks
+    : props.taskType === "completedTasks"
+      ? completedTasks
+      : filteredTasks;
 
   return (
     <div className="task-list-container">
-      <h2>All Tasks</h2>
+      <h2>{props.taskType === "pendingTasks" ? "Pending Tasks" : props.taskType === "completedTasks" ? "Completed Tasks" : "All Tasks"}</h2>
 
       {/* Filters */}
       <div className="filters">

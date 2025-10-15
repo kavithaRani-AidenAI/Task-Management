@@ -178,6 +178,7 @@ async function submit(e) {
     return;
   }
 
+  if (loading) return; // prevent duplicate submits
   setLoading(true);
 
   try {
@@ -277,8 +278,8 @@ if (role === "admin") {
               </div>
               {err && <div style={{ color: "red", marginBottom: "10px" }}>{err}</div>}
               <div className="form-group">
-                <button className="btn" type="submit">
-                  Login
+                <button className="btn" type="submit" disabled={loading} aria-busy={loading}>
+                  {loading ? "Logging in..." : "Login"}
                 </button>
               </div>
             </div>
