@@ -139,13 +139,13 @@ textarea {
 } */
 
 .task-list-container {
-    margin: 2rem 0 2rem 0rem;
-    padding: 1.5rem;
-    width: 1400px;
-    max-width: none;
-    background: #e2edf1;
+    margin: 1rem auto;            /* center inside the section */
+    padding: 1rem 1.25rem;
+    width: 100%;                  /* responsive width */
+    max-width: min(96vw, 1800px); /* fluid to match AdminDashboard */
+    background: #ffffff;          /* cleaner card look */
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .task-list-container h2 {
@@ -187,22 +187,48 @@ textarea {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.95rem;
+  table-layout: auto;            /* let widths below apply cleanly */
 }
 
+/* Match AdminDashboard column widths */
+.task-table th:nth-child(1),
+.task-table td:nth-child(1) { /* ID */ width: 5%; }
+.task-table th:nth-child(2),
+.task-table td:nth-child(2) { /* Employee */ width: 15%; }
+.task-table th:nth-child(3),
+.task-table td:nth-child(3) { /* Project */ width: 9%; }
+.task-table th:nth-child(4),
+.task-table td:nth-child(4) { /* Module */ width: 9%; }
+.task-table th:nth-child(5),
+.task-table td:nth-child(5) { /* Task Details */ width: 26%; }
+.task-table th:nth-child(6),
+.task-table td:nth-child(6) { /* Assigned At */ width: 16%; white-space: nowrap; }
+.task-table th:nth-child(7),
+.task-table td:nth-child(7) { /* Assigned From */ width: 10%; white-space: nowrap; }
+.task-table th:nth-child(8),
+.task-table td:nth-child(8) { /* Status */ width: 10%; white-space: nowrap; }
+
 .task-table thead {
-  background: #007bff;
-  color: white;
+  background: #f0f2f5;           /* lighter header to match dashboard */
+  color: #111827;
 }
 
 .task-table th,
 .task-table td {
-  padding: 0.8rem 1rem;
+  padding: 10px 14px;            /* uniform spacing to match AdminDashboard */
   text-align: left;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e5e7eb;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
 }
+/* Use right borders to avoid merged look */
+.task-table thead th { border-right: 1px solid #e5e7eb; }
+.task-table thead th:last-child { border-right: none; }
+.task-table tbody td { border-right: 1px solid #f3f4f6; }
+.task-table tbody td:last-child { border-right: none; }
 
 .task-table tbody tr:nth-child(even) {
-  background: #f9f9f9;
+  background: #fafafa;
 }
 
 .task-table tbody tr:hover {

@@ -352,6 +352,7 @@ input, select, button {
 .employee-table-wrapper {
   height: 60vh; /* visible height of table container */
   overflow-y: auto; /* vertical scroll */
+  overflow-x: auto; /* horizontal scroll when needed */
   margin-top: 10px;
   border: 1px solid #ccc;
   border-radius: 8px;
@@ -360,6 +361,7 @@ input, select, button {
 .employee-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 600px; /* narrower to fit section */
 }
 
 .employee-table th,
@@ -385,11 +387,12 @@ input, select, button {
 
 /* Align task/employee tables consistently */
 .task-list-container, .employee-table-wrapper, .tasks-wrapper, .active-employees-wrapper {
-  max-width: 1120px; /* slight headroom so last column isn't clipped */
-  margin-left: auto;
-  margin-right: auto;
+  width: 100%;
+  max-width: min(96vw, 1800px); /* fluid up to 1800px */
+  margin: 16px auto; /* center horizontally */
   padding-left: 12px;
   padding-right: 12px;
+  display: block;
 }
 
 /* Ensure tables appear directly under the cards */
@@ -440,7 +443,17 @@ input, select, button {
 /* Keep tables fully visible within screen width */
 .tasks-wrapper, .active-employees-wrapper {
   width: 100%;
-  overflow-x: auto; /* enable horizontal scroll within the section if required */
+  overflow-x: hidden; /* hide scrollbar when table fits */
+}
+
+@media (max-width: 640px) {
+  .tasks-wrapper, .active-employees-wrapper { overflow-x: auto; }
+}
+
+/* Ensure dynamic table below cards also scrolls horizontally */
+.task-list-container {
+  width: 100%;
+  overflow-x: auto;
 }
 
 /* -------------------------
@@ -448,39 +461,44 @@ input, select, button {
    (prevents mid-column cutoffs)
 -------------------------- */
 .task-table {
-  table-layout: fixed; /* only tasks table uses fixed layout */
+  table-layout: auto; /* let browser size columns naturally */
+  width: 100%;
+  min-width: 0; /* no forced width so it fits wrapper */
 }
 .task-table th:nth-child(1),
 .task-table td:nth-child(1) { /* ID */
-  width: 6%;
+  width: 5%;
 }
 .task-table th:nth-child(2),
 .task-table td:nth-child(2) { /* Employee */
-  width: 18%;
+  width: 15%;
 }
 .task-table th:nth-child(3),
 .task-table td:nth-child(3) { /* Project */
-  width: 10%;
+  width: 9%;
 }
 .task-table th:nth-child(4),
 .task-table td:nth-child(4) { /* Module */
-  width: 10%;
+  width: 9%;
 }
 .task-table th:nth-child(5),
 .task-table td:nth-child(5) { /* Task Details */
-  width: 32%;
+  width: 26%;
 }
 .task-table th:nth-child(6),
 .task-table td:nth-child(6) { /* Assigned At */
-  width: 12%;
+  width: 16%;
+  white-space: nowrap;        /* keep date-time on one line */
 }
 .task-table th:nth-child(7),
 .task-table td:nth-child(7) { /* Assigned From */
-  width: 6%;
+  width: 10%;
+  white-space: nowrap;        /* avoid breaking 'Assigned From' header */
 }
 .task-table th:nth-child(8),
 .task-table td:nth-child(8) { /* Status */
-  width: 6%;
+  width: 10%;
+  white-space: nowrap;     /* keep short status on one line */
 }
 
 /* -------------------------
@@ -490,11 +508,53 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-family: Arial, sans-serif;
-  font-size: 13px; /* slightly smaller for compact look */
+  font-size: 12px; /* smaller for tighter alignment */
   background-color: #fff;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-left: auto; /* center table within wrapper if not full width */
+  margin-right: auto;
+}
+
+/* Keep long rows readable inside wrappers */
+.tasks-wrapper .task-table,
+.task-list-container .task-table,
+.active-employees-wrapper table {
+  min-width: 0; /* allow table to shrink to wrapper */
+  width: 100%;
+}
+
+/* Task table column spacing and alignment overrides */
+.task-table th, .task-table td {
+  padding: 10px 14px;          /* a touch more space for clearer gaps */
+  text-align: left;             /* left-align content for readability */
+  white-space: nowrap;          /* keep short headers like Status on one line */
+}
+/* Use right borders for separation (avoid double/merged look) */
+.task-table thead th { border-right: 1px solid #e5e7eb; }
+.task-table thead th:last-child { border-right: none; }
+.task-table tbody td { border-right: 1px solid #f3f4f6; }
+.task-table tbody td:last-child { border-right: none; }
+
+/* Make task table fit without horizontal scrolling */
+.task-table { table-layout: auto; max-width: 100%; }
+.task-table th, .task-table td { width: auto; }
+/* Allow wrapping on wider columns */
+.task-table th:nth-child(2), .task-table td:nth-child(2) { white-space: normal; }  /* Employee */
+.task-table th:nth-child(5), .task-table td:nth-child(5) { white-space: normal; }  /* Task Details */
+.task-table th:nth-child(6), .task-table td:nth-child(6) { white-space: normal; }  /* Assigned At */
+.task-table th:nth-child(7), .task-table td:nth-child(7) { white-space: normal; }  /* Assigned From */
+.task-table th:nth-child(8), .task-table td:nth-child(8) { white-space: normal; }  /* Status */
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .task-table { table-layout: auto; }
+  thead th { padding: 8px 8px; }
+  tbody td { padding: 6px 8px; }
+}
+@media (max-width: 640px) {
+  table { font-size: 12px; }
 }
 
 thead {
@@ -502,7 +562,7 @@ thead {
 }
 
 thead th {
-  padding: 10px 10px;
+  padding: 8px 8px; /* compact header */
   text-align: center; /* center all table headings */
   font-weight: 600;
   color: #333;
@@ -510,7 +570,7 @@ thead th {
 }
 
 tbody td {
-  padding: 8px 10px;
+  padding: 6px 8px; /* compact body cells */
   border-bottom: 1px solid #eee;
   color: #555;
   text-align: center; /* center table cells by default */
