@@ -27,6 +27,7 @@ export default function AdminDashboard() {
   const [filterCard, setFilterCard] = useState(""); // "", "totalEmployees", "totalTasks", "pendingTasks"
   const [employees, setEmployees] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [loadingCard, setLoadingCard] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -227,6 +228,15 @@ export default function AdminDashboard() {
   const showEmployees = () => { fetchEmployees(); setActivePage("employees"); setFilterCard(""); };
   const showTasks = () => { fetchTasks(); setActivePage("tasks"); setFilterCard(""); };
 
+  // Smooth card switching with quick refresh and loading state to avoid perceived delays
+  const handleCardClick = (cardKey) => {
+    // Render immediately
+    setFilterCard(cardKey);
+    setLoadingCard(true);
+    // Refresh in background without blocking UI
+    fetchTasks().finally(() => setLoadingCard(false));
+  };
+
   // -----------------------------
   // Excel Export
   // -----------------------------
@@ -278,10 +288,12 @@ export default function AdminDashboard() {
   // -----------------------------
   // Active Employees Count
   // -----------------------------
-  const activeEmployeesCount = employees.filter(emp => {
-    const empTasks = tasks.filter(task => task.assigned_to && String(task.assigned_to) === String(emp.emp_code));
-    if (empTasks.length === 0) return true; // no tasks assigned
-    return empTasks.every(task => task.status === "Completed");
+  const activeEmployeesCount = employees.filter((emp) => {
+    const empTasks = tasks.filter(
+      (task) => String(task.emp_code) === String(emp.emp_code)
+    );
+    if (empTasks.length === 0) return false; // must have at least one task
+    return empTasks.every((task) => task.status === "Completed");
   }).length;
 
   // -----------------------------
@@ -313,22 +325,34 @@ export default function AdminDashboard() {
                 <div className="stat-value">{stats.totalEmployees}</div>
               </div>
 
-              <div className="stat-card total-tasks" onClick={() => setFilterCard("totalTasks")}>
+              <div className="stat-card total-tasks" onClick={() => handleCardClick("totalTasks")}>
                 <div className="stat-title">Total Tasks</div>
                 <div className="stat-value">{stats.totalTasks}</div>
               </div>
 
-              <div className="stat-card pending-tasks" onClick={() => setFilterCard("pendingTasks")}>
+              <div className="stat-card pending-tasks" onClick={() => handleCardClick("pendingTasks")}>
                 <div className="stat-title">Pending</div>
                 <div className="stat-value">{stats.pendingTasks}</div>
               </div>
 
 
-              <div className="stat-card active-employees" onClick={() => setFilterCard("activeEmployees")}>
+              <div className="stat-card active-employees" onClick={() => handleCardClick("activeEmployees")}>
                 <div className="stat-title">Active Employees</div>
                 <div className="stat-value">{activeEmployeesCount}</div>
               </div>
+
+              {/* New: Completed Tasks Card */}
+              <div className="stat-card completed-tasks" onClick={() => handleCardClick("completedTasks")}>
+                <div className="stat-title">Completed Tasks</div>
+                <div className="stat-value">{tasks.filter(t => t.status === 'Completed').length}</div>
+              </div>
             </div>
+
+            {loadingCard && (
+              <div className="task-list-container">
+                <div className="loading">Loading...</div>
+              </div>
+            )}
 
             {/* Dynamic Table Below Cards */}
             {filterCard === "totalEmployees" && (
@@ -372,19 +396,24 @@ export default function AdminDashboard() {
             )}
             {filterCard === "totalTasks" && (
             <div className="tasks-wrapper">
-                <Task  taskType="totalTasks"/>
+                <Task taskType="totalTasks" tasks={tasks} />
 
                   </div>
                   )}</div>
                 )}
             {filterCard === "pendingTasks" && (
             <div className="tasks-wrapper">
-                <Task taskType="pendingTasks"/> 
+                <Task taskType="pendingTasks" tasks={tasks} /> 
                   </div>
                   )}
+            {filterCard === "completedTasks" && (
+            <div className="tasks-wrapper">
+                <Task taskType="completedTasks" tasks={tasks} />
+              </div>
+            )}
             {filterCard === "activeEmployees" && (
               <div className="active-employees-wrapper">
-              <Active />
+              <Active employees={employees} tasks={tasks} />
             
           </div>   
         )}

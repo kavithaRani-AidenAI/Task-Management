@@ -71,30 +71,181 @@ export default function AdminLogin() {
     return true;
   };
 
-  const submit = async (e) => {
-    e.preventDefault();
-    setErr("");
-    if (!showMobileLogin && !validateLoginForm()) return;
-    setLoading(true);
-    try {
-      const hashedPassword = CryptoJS.SHA256(password).toString();
-      const res = await axios.post("http://localhost:5000/api/login", { username, password: hashedPassword });
-      const data = res.data;
-      if (data.success) {
-        const role = data.role?.toLowerCase();
-        const user = data.user;
-        if (role === "admin") {
-          localStorage.setItem("admin", JSON.stringify({ emp_code: user.emp_code, name: user.name }));
-          nav("/admin-dashboard");
-        } else if (role === "employee") {
+
+ 
+//  async function submit(e) {
+//   e.preventDefault();
+//   setErr("");
+
+//   // Username validation: must start with DS followed by exactly 3 digits
+//   const usernamePattern = /^DS\d{3}$/;
+//   if (!usernamePattern.test(username)) {
+//     setErr("Username must start with 'DS' followed by 3 digits (e.g., DS001)");
+//     return;
+//   }
+
+//   if (!username || !password) {
+//     setErr("Please enter both username and password");
+//     return;
+//   }
+
+//   setLoading(true);
+//   try {
+//     // ✅ Hash the password before sending
+//     const hashedPassword = CryptoJS.SHA256(password).toString();
+
+//     const res = await axios.post("http://localhost:5000/api/login", {
+//       username,
+//       password: hashedPassword, // send hashed password
+//     });
+
+//     if (res.data.success) {
+//       if (res.data.role === "admin") {
+//         localStorage.setItem("admin", JSON.stringify(res.data.user));
+//         nav("/admin-dashboard");
+//       } else if (res.data.role === "employee") {
+//         localStorage.setItem("employee", JSON.stringify(res.data.user));
+//         nav(`/employee-dashboard/${res.data.user.emp_code}`);
+//       }
+//     } else {
+//       setErr(res.data.message || "Login failed");
+//     }
+//   } catch (error) {
+//     setErr(error?.response?.data?.message || "Login failed");
+//   } finally {
+//     setLoading(false);
+//   }
+// }
+
+// async function submit(e) {
+//   e.preventDefault();
+//   setErr("");
+
+//   // Username validation: must start with DS followed by exactly 3 digits
+//   const usernamePattern = /^DS\d{3}$/;
+//   if (!usernamePattern.test(username)) {
+//     setErr("Username must start with 'DS' followed by 3 digits (e.g., DS001)");
+//     return;
+//   }
+
+//   if (!username || !password) {
+//     setErr("Please enter both username and password");
+//     return;
+//   }
+//  if (usernameErr) {
+//       setErr("Please enter the correct username");
+//       return;
+//     }
+//   setLoading(true);
+
+//   try {
+//     // ✅ Hash the password before sending
+//     const hashedPassword = CryptoJS.SHA256(password).toString();
+
+//     const res = await axios.post("http://localhost:5000/api/login", {
+//       username,
+//       password: hashedPassword, // send hashed password
+//     });
+
+//     if (res.data.success) {
+//       // const role = res.data.role?.toLowerCase(); // sanitize role
+//       // const user = res.data.user;
+
+//       // Store user info in localStorage
+//       // localStorage.setItem("user", JSON.stringify(user));
+//       // localStorage.setItem("role", role);
+
+//       // Navigate based on role
+//       // if (role === "admin") {
+//       //   nav("/admin-dashboard");
+//       // } else if (role === "employee") {
+//       //   nav(`/employee-dashboard/${user.emp_code}`);
+//       // } else {
+//       //   setErr("Unknown role. Please contact administrator.");
+//       // }
+//       if (res.data.role === "admin") {
+//           localStorage.setItem("admin", JSON.stringify(res.data.user));
+//           nav("/admin-dashboard");
+//         } else if (res.data.role === "employee") {
+//           localStorage.setItem("employee", JSON.stringify(res.data.user));
+//           nav(`/employee-dashboard/${res.data.user.emp_code}`);
+//         }
+//     } else {
+//       setErr(res.data.message || "Login failed");
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     setErr(error?.response?.data?.message || "Server error. Please try again.");
+//   } finally {
+//     setLoading(false);
+//   }
+// }
+
+async function submit(e) {
+  e.preventDefault();
+  setErr("");
+
+  // Username validation
+  const usernamePattern = /^DS\d{3}$/;
+  if (!usernamePattern.test(username)) {
+    setErr("Username must start with 'DS' ");
+    return;
+  }
+
+  if (!username || !password) {
+    setErr("Please enter both username and password");
+    return;
+  }
+
+  if (usernameErr) {
+    setErr("Please enter the correct username");
+    return;
+  }
+
+  if (loading) return; // prevent duplicate submits
+  setLoading(true);
+
+  try {
+    // ✅ Hash the password before sending
+    const hashedPassword = CryptoJS.SHA256(password).toString();
+
+    const res = await axios.post("http://localhost:5000/api/login", {
+      username,
+      password: hashedPassword,
+    });
+
+    const data = res.data;
+
+    if (data.success) {
+      const role = data.role?.toLowerCase();
+      const user = data.user;
+
+      // ✅ Store role and user data
+      localStorage.setItem("role", role);
+      //localStorage.setItem("user", JSON.stringify(user));
+
+      // ✅ Navigate based on role
+if (role === "admin") {
+        // ✅ Store admin separately for TaskAssignForm
+        localStorage.setItem("admin", JSON.stringify({
+          emp_code: user.emp_code, // ensure backend returns emp_code
+          name: user.name,
+          position:user.position
+          // add other fields if needed
+        }));
+        nav("/admin-dashboard");
+      } else if (role === "employee") {
+        // Employee dashboard requires emp_code
+        if (user?.emp_code) {
           nav(`/employee-dashboard/${user.emp_code}`);
         } else setErr("Unknown role. Contact admin.");
       } else setErr(data.message || "Login failed");
+    }
     } catch (error) {
       console.error(error);
       setErr(error?.response?.data?.message || "Server error");
     } finally { setLoading(false); }
-  };
+  }
 
   const sendOtp = () => {
     if (!mobile || mobile.length !== 10) { setErr("Enter valid 10-digit mobile number"); setOtpSuccess(""); return; }
@@ -134,18 +285,6 @@ export default function AdminLogin() {
                  </div>
                 {err && <div className="error">{err}</div>}
               </div>
-{/* 
-              <div className="form-group">
-                <h4>Password</h4>
-                <div className="password-wrapper">
-                  <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter password" required />
-                  <button type="button" className="toggle-pass" onClick={() => setShowPassword(!showPassword)}>{showPassword ? "Hide" : "Show"}</button>
-                </div>
-              </div>
-              */}
-               {/* <div className="forgot-password">
-                <a href="#" onClick={(e) => e.preventDefault()}>Forgot Password?</a>
-              </div> */}
               <div className="passwordpage">
                 <label className="checkrem">
                   <input type="checkbox"/>
@@ -171,6 +310,9 @@ export default function AdminLogin() {
                 <h4 className="mobile-heading">Mobile Number</h4>
                 <input type="tel" value={mobile} onChange={handleMobileChange} placeholder="Enter mobile number" maxLength="10" required />
                 {err && <p className="error">{err}</p>}
+                <button className="btn" type="submit" disabled={loading} aria-busy={loading}>
+                  {loading ? "Logging in..." : "Login"}
+                </button>
               </div>
               <button className="btns" onClick={sendOtp} disabled={mobile.length !== 10}>{otpSent ? "Login" : "Send OTP"}</button>
 
@@ -198,4 +340,4 @@ export default function AdminLogin() {
       </div>
     </div>
   );
-}
+        }

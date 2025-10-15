@@ -3,6 +3,11 @@
   padding: 20px;
 }
 
+/* Prevent any horizontal scrolling */
+html, body {
+  overflow-x: auto; /* enable horizontal scroll when needed */
+}
+
 .navbar {
   display: flex;
   justify-content: center;
@@ -85,10 +90,13 @@ input, select, button {
 
 
 .nav-bars {
-  width: 32%;
-  margin-left: 992px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
   background: #ffffff;
   border-radius: 10px;
+  margin: 0 auto;
+  max-width: 1100px;
 }
 
 .nav-bars h2 {
@@ -120,7 +128,10 @@ input, select, button {
 /* Dashboard Welcome */
 .dashboard-section {
   text-align: center;
-  margin-top: 40px;
+  margin-top: 24px;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .dashboard-section h3 {
@@ -132,20 +143,19 @@ input, select, button {
 
 /* Stats cards container */
 .stats-container {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  align-items: stretch;
 }
 
 /* Individual stat card */
 .stat-card {
   background: #fff;
-  padding: 25px 40px;
-  border-radius: 12px;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 12px 16px;
+  border-radius: 10px;
+  box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.08);
   text-align: center;
-  min-width: 200px;
   transition: transform 0.3s ease;
 }
 
@@ -154,17 +164,24 @@ input, select, button {
 }
 
 .stat-title {
-  font-size: 14px;
-  font-weight: 500;
-  color:white;
-  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
 }
 
 .stat-value {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
-  color: white;
+  color: #111;
 }
+
+/* Card specific backgrounds for better visual grouping */
+.total-employees { background: linear-gradient(180deg, #e3f2fd 0%, #ffffff 60%); }
+.total-tasks { background: linear-gradient(180deg, #ede7f6 0%, #ffffff 60%); }
+.pending-tasks { background: linear-gradient(180deg, #fff3e0 0%, #ffffff 60%); }
+.active-employees { background: linear-gradient(180deg, #e8f5e9 0%, #ffffff 60%); }
+.completed-tasks { background: linear-gradient(180deg, #f3e5f5 0%, #ffffff 60%); }
 
 /* //employee adding form */
 
@@ -366,6 +383,21 @@ input, select, button {
   margin-top: 20px;
 }
 
+/* Align task/employee tables consistently */
+.task-list-container, .employee-table-wrapper, .tasks-wrapper, .active-employees-wrapper {
+  max-width: 1120px; /* slight headroom so last column isn't clipped */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+/* Ensure tables appear directly under the cards */
+.tasks-wrapper, .active-employees-wrapper {
+  margin-top: 16px;
+  clear: both;
+}
+
 .download-btn {
   background-color: #007bff;
   color: #fff;
@@ -405,6 +437,52 @@ input, select, button {
   overflow-x: auto;
 }
 
+/* Keep tables fully visible within screen width */
+.tasks-wrapper, .active-employees-wrapper {
+  width: 100%;
+  overflow-x: auto; /* enable horizontal scroll within the section if required */
+}
+
+/* -------------------------
+   Task table column widths
+   (prevents mid-column cutoffs)
+-------------------------- */
+.task-table {
+  table-layout: fixed; /* only tasks table uses fixed layout */
+}
+.task-table th:nth-child(1),
+.task-table td:nth-child(1) { /* ID */
+  width: 6%;
+}
+.task-table th:nth-child(2),
+.task-table td:nth-child(2) { /* Employee */
+  width: 18%;
+}
+.task-table th:nth-child(3),
+.task-table td:nth-child(3) { /* Project */
+  width: 10%;
+}
+.task-table th:nth-child(4),
+.task-table td:nth-child(4) { /* Module */
+  width: 10%;
+}
+.task-table th:nth-child(5),
+.task-table td:nth-child(5) { /* Task Details */
+  width: 32%;
+}
+.task-table th:nth-child(6),
+.task-table td:nth-child(6) { /* Assigned At */
+  width: 12%;
+}
+.task-table th:nth-child(7),
+.task-table td:nth-child(7) { /* Assigned From */
+  width: 6%;
+}
+.task-table th:nth-child(8),
+.task-table td:nth-child(8) { /* Status */
+  width: 6%;
+}
+
 /* -------------------------
    Tables
 -------------------------- */
@@ -412,7 +490,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-family: Arial, sans-serif;
-  font-size: 14px;
+  font-size: 13px; /* slightly smaller for compact look */
   background-color: #fff;
   border-radius: 8px;
   overflow: hidden;
@@ -424,17 +502,20 @@ thead {
 }
 
 thead th {
-  padding: 12px 10px;
-  text-align: left;
+  padding: 10px 10px;
+  text-align: center; /* center all table headings */
   font-weight: 600;
   color: #333;
   border-bottom: 2px solid #ddd;
 }
 
 tbody td {
-  padding: 10px;
+  padding: 8px 10px;
   border-bottom: 1px solid #eee;
   color: #555;
+  text-align: center; /* center table cells by default */
+  word-wrap: break-word;
+  overflow-wrap: anywhere; /* break long strings */
 }
 
 tbody tr:hover {

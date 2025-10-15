@@ -85,6 +85,17 @@
   top:140px;
   margin-top: 25px;
 }
+.calendar-day.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.link-like {
+  color: #0d6efd;
+  cursor: pointer;
+  text-decoration: underline;
+}
 
 .calendar-header {
   display: flex;
