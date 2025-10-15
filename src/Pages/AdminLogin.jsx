@@ -207,7 +207,7 @@ async function submit(e) {
   const usernamePattern = /^DS\d{3}$/;
 <<<<<<< HEAD
   if (!usernamePattern.test(username)) {
-    setErr("password is wrong");
+    setErr("Username must start with 'DS' ");
     return;
   }
 =======

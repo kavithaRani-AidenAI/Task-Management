@@ -10,11 +10,12 @@ import { saveAs } from "file-saver";
 import { useNavigate } from "react-router-dom";
 import Task from "./Task";
 import Active from "./Active";
-import EmployeeDashboard from "./EmployeeDashboard";
+
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
+  // Dashboard stats
   const [stats, setStats] = useState({
     totalEmployees: 0,
     totalTasks: 0,
@@ -23,7 +24,7 @@ export default function AdminDashboard() {
   });
 
   const [activePage, setActivePage] = useState("dashboard");
-  const [filterCard, setFilterCard] = useState("");
+  const [filterCard, setFilterCard] = useState(""); // "", "totalEmployees", "totalTasks", "pendingTasks"
   const [employees, setEmployees] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loadingCard, setLoadingCard] = useState(false);
@@ -37,6 +38,9 @@ export default function AdminDashboard() {
     position: "",
   });
 
+  // -----------------------------
+  // Fetch Employees
+  // -----------------------------
   const fetchEmployees = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/emp_details");
@@ -57,6 +61,9 @@ export default function AdminDashboard() {
     }
   };
 
+  // -----------------------------
+  // Fetch Tasks
+  // -----------------------------
   const fetchTasks = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/tasks");
@@ -66,8 +73,12 @@ export default function AdminDashboard() {
     }
   };
 
+  // -----------------------------
+  // Fetch Dashboard Stats
+  // -----------------------------
   const fetchStats = async () => {
     try {
+      // Fetch all data in parallel for better performance
       const [statsRes, employeesRes, tasksRes] = await Promise.all([
         axios.get("http://localhost:5000/api/dashboard-stats"),
         axios.get("http://localhost:5000/api/emp_details"),
@@ -78,11 +89,13 @@ export default function AdminDashboard() {
       const allEmployees = employeesRes.data || [];
       const allTasks = tasksRes.data || [];
       
+      // Calculate active employees (those with all tasks completed)
       const activeEmployees = allEmployees.filter(emp => {
         const employeeTasks = allTasks.filter(task => task.emp_code === emp.emp_code);
         return employeeTasks.length > 0 && employeeTasks.every(task => task.status === 'Completed');
       }).length;
 
+      // Update stats with consistent property names
       setStats({
         totalEmployees: allEmployees.length,
         totalTasks: allTasks.length,
@@ -91,15 +104,31 @@ export default function AdminDashboard() {
       });
     } catch (err) {
       console.error("Error fetching stats:", err);
-      setStats({
-        totalEmployees: 0,
-        totalTasks: 0,
-        pendingTasks: 0,
-        activeEmployees: 0
-      });
+      // Fallback to API stats if available, otherwise use 0
+      try {
+        const res = await axios.get("http://localhost:5000/api/dashboard-stats");
+        const data = res.data || {};
+        setStats({
+          totalEmployees: data.totalEmployees || data.total_employees || 0,
+          totalTasks: data.totalTasks || data.total_tasks || 0,
+          pendingTasks: data.pendingTasks || data.pending_tasks || 0,
+          activeEmployees: 0 // Fallback to 0 if we can't calculate
+        });
+      } catch (fallbackErr) {
+        console.error("Fallback stats fetch failed:", fallbackErr);
+        setStats({
+          totalEmployees: 0,
+          totalTasks: 0,
+          pendingTasks: 0,
+          activeEmployees: 0
+        });
+      }
     }
   };
 
+  // -----------------------------
+  // Handle Back Button / Exit
+  // -----------------------------
   useEffect(() => {
     const handlePopState = () => {
       const confirmExit = window.confirm("Are you sure you want to exit?");
@@ -119,12 +148,18 @@ export default function AdminDashboard() {
     };
   }, [navigate]);
 
+  // -----------------------------
+  // Initial Fetch
+  // -----------------------------
   useEffect(() => {
     fetchEmployees();
     fetchTasks();
     fetchStats();
   }, []);
 
+  // -----------------------------
+  // Form Handling
+  // -----------------------------
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -162,6 +197,9 @@ export default function AdminDashboard() {
     }
   };
 
+  // -----------------------------
+  // Delete Employee
+  // -----------------------------
   const deleteEmployee = async (id) => {
     try {
       await axios.delete(`http://localhost:5000/api/emp_details/${id}`);
@@ -172,6 +210,9 @@ export default function AdminDashboard() {
     }
   };
 
+  // -----------------------------
+  // Logout
+  // -----------------------------
   const logout = () => {
     const confirmExit = window.confirm("Are you sure you want to exit?");
     if (confirmExit) {
@@ -180,16 +221,25 @@ export default function AdminDashboard() {
     }
   };
 
+  // -----------------------------
+  // Page Switches
+  // -----------------------------
   const showDashboard = () => { setActivePage("dashboard"); setFilterCard(""); };
   const showEmployees = () => { fetchEmployees(); setActivePage("employees"); setFilterCard(""); };
   const showTasks = () => { fetchTasks(); setActivePage("tasks"); setFilterCard(""); };
 
+  // Smooth card switching with quick refresh and loading state to avoid perceived delays
   const handleCardClick = (cardKey) => {
+    // Render immediately
     setFilterCard(cardKey);
     setLoadingCard(true);
+    // Refresh in background without blocking UI
     fetchTasks().finally(() => setLoadingCard(false));
   };
 
+  // -----------------------------
+  // Excel Export
+  // -----------------------------
   const exportEmployeesToExcel = () => {
     if (employees.length === 0) {
       alert("No data to export!");
@@ -235,33 +285,40 @@ export default function AdminDashboard() {
     saveAs(data, `Tasks_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
+  // -----------------------------
+  // Active Employees Count
+  // -----------------------------
   const activeEmployeesCount = employees.filter((emp) => {
     const empTasks = tasks.filter(
       (task) => String(task.emp_code) === String(emp.emp_code)
     );
-    if (empTasks.length === 0) return false;
+    if (empTasks.length === 0) return false; // must have at least one task
     return empTasks.every((task) => task.status === "Completed");
   }).length;
 
+  // -----------------------------
+  // Today Date
+  // -----------------------------
   const todayDate = new Date().toISOString().slice(0, 10);
 
   return (
     <>
       <DashboardHeader currentUser={null} />
       <div className="container">
-        {/* Nav bar - FIXED: Added the button here */}
+        {/* Nav bar */}
         <div className="nav-bars">
+          {/* <h2>Admin Dashboard</h2> */}
           <div>
             <button onClick={showEmployees}>Manage Employees</button>
             <button onClick={showTasks}>Assign Tasks</button>
-            <button onClick={() => setActivePage("employeeDashboard")}>View Employee Dashboard</button>
+            {/* <button onClick={logout}>Logout</button> */}
           </div>
         </div>
   
         {/* Dashboard */}
         {activePage === "dashboard" && (
           <div className="dashboard-section">
-            <h3><b>DASHBOARD</b></h3>
+          <h3><b>DASHBOARD</b></h3>
             <div className="stats-container">
               <div className="stat-card total-employees" onClick={() => setFilterCard("totalEmployees")}>
                 <div className="stat-title">Total Employees</div>
@@ -278,11 +335,13 @@ export default function AdminDashboard() {
                 <div className="stat-value">{stats.pendingTasks}</div>
               </div>
 
+
               <div className="stat-card active-employees" onClick={() => handleCardClick("activeEmployees")}>
                 <div className="stat-title">Active Employees</div>
                 <div className="stat-value">{activeEmployeesCount}</div>
               </div>
 
+              {/* New: Completed Tasks Card */}
               <div className="stat-card completed-tasks" onClick={() => handleCardClick("completedTasks")}>
                 <div className="stat-title">Completed Tasks</div>
                 <div className="stat-value">{tasks.filter(t => t.status === 'Completed').length}</div>
@@ -295,6 +354,7 @@ export default function AdminDashboard() {
               </div>
             )}
 
+            {/* Dynamic Table Below Cards */}
             {filterCard === "totalEmployees" && (
               <div className="task-list-container">
                 <h3>All Employees</h3>
@@ -334,32 +394,32 @@ export default function AdminDashboard() {
                 </table>
               </div>
             )}
-
             {filterCard === "totalTasks" && (
-              <div className="tasks-wrapper">
+            <div className="tasks-wrapper">
                 <Task taskType="totalTasks" tasks={tasks} />
-              </div>
-            )}
 
+                  </div>
+                  )}</div>
+                )}
             {filterCard === "pendingTasks" && (
-              <div className="tasks-wrapper">
+            <div className="tasks-wrapper">
                 <Task taskType="pendingTasks" tasks={tasks} /> 
-              </div>
-            )}
-
+                  </div>
+                  )}
             {filterCard === "completedTasks" && (
-              <div className="tasks-wrapper">
+            <div className="tasks-wrapper">
                 <Task taskType="completedTasks" tasks={tasks} />
               </div>
             )}
-
             {filterCard === "activeEmployees" && (
               <div className="active-employees-wrapper">
-                <Active employees={employees} tasks={tasks} />
-              </div>   
-            )}
-          </div>
+              <Active employees={employees} tasks={tasks} />
+            
+          </div>   
         )}
+                
+            
+                
 
         {/* Employees Section */}
         {activePage === "employees" && (
@@ -367,7 +427,7 @@ export default function AdminDashboard() {
             <button className="back-btn" onClick={() => setActivePage("dashboard")}>
               ← Back to Dashboard
             </button>
-            <h4 className="alignments">Add New Employee</h4>
+             <h4 className="alignments">Add New Employee</h4>
             <form onSubmit={handleSubmit} className="empform">
               <input type="text" name="name" placeholder="Enter employee name" value={form.name} onChange={handleChange} required disabled={isSubmitting} />
               <input type="email" name="email" placeholder="Enter email" value={form.email} onChange={handleChange} required disabled={isSubmitting} />
@@ -419,10 +479,16 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* Success message */}
+        {successMessage && <div className="success-popup">{successMessage}</div>}
+
         {/* Tasks Section */}
         {activePage === "tasks" && (
           <>
-            <div className="table-header"></div>
+            <div className="table-header">
+              
+            
+            </div>
             <TaskAssignForm
               activePage={activePage}
               setActivePage={setActivePage}
@@ -430,18 +496,6 @@ export default function AdminDashboard() {
             />
           </>
         )}
-
-        {/* Employee Dashboard Section - FIXED: Moved outside employees section */}
-        {activePage === "employeeDashboard" && (
-          <div>
-            <button className="back-btn" onClick={() => setActivePage("dashboard")}>
-              ← Back to Admin Dashboard
-            </button>
-            <EmployeeDashboard />
-          </div>
-        )}
-
-        {successMessage && <div className="success-popup">{successMessage}</div>}
       </div>
       <Footer />
     </>
