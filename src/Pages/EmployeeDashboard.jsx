@@ -13,13 +13,32 @@ function EmployeeDashboard() {
   const { empCode } = useParams();
   const API_BASE = "http://localhost:5000/api";
 
+  // Timezone helpers (IST)
+  const TZ = "Asia/Kolkata";
+  const formatISTDate = (dateLike) =>
+    new Intl.DateTimeFormat("en-IN", { year: "numeric", month: "2-digit", day: "2-digit", timeZone: TZ }).format(new Date(dateLike));
+  const formatISTDateTime = (dateLike) =>
+    new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short", timeZone: TZ }).format(new Date(dateLike));
+  const getISTYMD = (dateLike) => {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: TZ,
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+    }).formatToParts(new Date(dateLike));
+    const y = Number(parts.find((p) => p.type === "year").value);
+    const m = Number(parts.find((p) => p.type === "month").value) - 1; // 0-index
+    const d = Number(parts.find((p) => p.type === "day").value);
+    return { y, m, d };
+  };
+
   const [emp, setEmp] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [projects, setProjects] = useState([]);
   const [completedDates, setCompletedDates] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(currentTime.toLocaleDateString());
+  const [selectedDate, setSelectedDate] = useState(formatISTDate(new Date()));
   const [showPopup, setShowPopup] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -138,6 +157,14 @@ function EmployeeDashboard() {
     if (empCode) fetchTasks();
   }, [empCode]);
 
+  // Filter tasks by selected date (IST)
+  useEffect(() => {
+    const byDate = tasks.filter(
+      (t) => formatISTDate(t.created_at) === selectedDate
+    );
+    setFilteredTasks(byDate);
+  }, [tasks, selectedDate]);
+
   // Form change
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -225,7 +252,7 @@ function EmployeeDashboard() {
       //Submodule: task.submodule,
       "Task Details": `${task.submodule || ""} --- ${task.task_details || ""}`,
       "Assigned From": task.assigned_from,
-      "Assigned At": new Date(task.created_at).toLocaleString(),
+      "Assigned At": formatISTDateTime(task.created_at),
       Status: task.status,
     }));
 
@@ -344,11 +371,13 @@ function EmployeeDashboard() {
                     if (!day) return <div key={idx} className="calendar-day empty"></div>;
 
                     const dateOfDay = new Date(currentYear, currentMonth, day);
-                    const dateStr = dateOfDay.toLocaleDateString();
+                    const dateStr = formatISTDate(dateOfDay);
                     const isToday =
                       day === currentTime.getDate() &&
                       currentMonth === currentTime.getMonth() &&
                       currentYear === currentTime.getFullYear();
+                    const istToday = getISTYMD(new Date());
+                    const isFuture = new Date(currentYear, currentMonth, day) > new Date(istToday.y, istToday.m, istToday.d);
 
                     const isCompleted = completedDates.includes(dateStr);
                     const isHoliday = holidays.includes(dateStr);
@@ -359,19 +388,15 @@ function EmployeeDashboard() {
                     else className += " pending";
                     if (isToday) className += " today";
                     if (dateStr === selectedDate) className += " selected";
+                    if (isFuture) className += " disabled";
 
                     return (
                       <div
                         key={idx}
                         className={className}
-                        onClick={() => setSelectedDate(dateStr)}
+                        onClick={!isFuture ? () => setSelectedDate(dateStr) : undefined}
                       >
                         {day}
-                        {tasks.filter(t => t.date === dateStr).length > 0 && (
-                          <span className="task-badge">
-                            {tasks.filter(t => t.date === dateStr).length}
-                          </span>
-                        )}
                       </div>
                     );
                   })}
@@ -495,7 +520,19 @@ function EmployeeDashboard() {
                     <td>{task.project}</td>
                     <td>{task.module}</td>
                     <td>{task.submodule}-{task.task_details}</td>
-                    <td>{new Date(task.created_at).toLocaleString()}</td>
+                    <td>
+                      <span
+                        className="link-like"
+                        onClick={() => {
+                          const { y, m } = getISTYMD(task.created_at);
+                          setSelectedDate(formatISTDate(task.created_at));
+                          setCurrentMonth(m);
+                          setCurrentYear(y);
+                        }}
+                      >
+                        {formatISTDateTime(task.created_at)}
+                      </span>
+                    </td>
                     <td>{task.assigned_from}</td>
                     <td>
                       <select
