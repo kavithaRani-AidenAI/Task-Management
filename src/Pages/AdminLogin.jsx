@@ -35,6 +35,16 @@ export default function AdminLogin() {
     return () => clearInterval(interval);
   }, [otpSent, resendTime]);
 
+  // Reset transient messages when switching login mode
+  useEffect(() => {
+    setErr("");
+    setUsernameErr("");
+    setOtpSuccess("");
+    setOtp(["", "", "", ""]);
+    setOtpSent(false);
+    setResendTime(30);
+  }, [showMobileLogin]);
+
   const handleUsernameChange = (e) => {
     const value = e.target.value.toUpperCase();
     setUsername(value);
@@ -263,8 +273,29 @@ if (role === "admin") {
 
           {/* Toggle Buttons */}
           <div className="login-toggle">
-            <button className={!showMobileLogin ? "active" : ""} onClick={() => setShowMobileLogin(false)}>Employee ID</button>
-            <button className={showMobileLogin ? "active" : ""} onClick={() => setShowMobileLogin(true)}>Mobile OTP</button>
+            <button
+              className={!showMobileLogin ? "active" : ""}
+              onClick={() => {
+                setShowMobileLogin(false);
+                setErr("");
+                setUsernameErr("");
+                setOtpSuccess("");
+                setOtp(["", "", "", ""]);
+                setOtpSent(false);
+                setResendTime(30);
+              }}
+            >Employee ID</button>
+            <button
+              className={showMobileLogin ? "active" : ""}
+              onClick={() => {
+                setShowMobileLogin(true);
+                setErr("");
+                setUsernameErr("");
+                setOtpSuccess("");
+                setOtp(["", "", "", ""]);
+                setResendTime(30);
+              }}
+            >Mobile OTP</button>
           </div>
 
           {/* Employee ID Login */}
