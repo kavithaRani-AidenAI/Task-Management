@@ -9,6 +9,8 @@ import axios from "axios";
 import { saveAs } from "file-saver";
 import { useNavigate } from "react-router-dom";
 import Task from "./Task";
+import Active from "./Active";
+
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -18,6 +20,7 @@ export default function AdminDashboard() {
     totalEmployees: 0,
     totalTasks: 0,
     pendingTasks: 0,
+    activeEmployees: 0
   });
 
   const [activePage, setActivePage] = useState("dashboard");
@@ -74,15 +77,51 @@ export default function AdminDashboard() {
   // -----------------------------
   const fetchStats = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/dashboard-stats");
-      const data = res.data ?? {};
+      // Fetch all data in parallel for better performance
+      const [statsRes, employeesRes, tasksRes] = await Promise.all([
+        axios.get("http://localhost:5000/api/dashboard-stats"),
+        axios.get("http://localhost:5000/api/emp_details"),
+        axios.get("http://localhost:5000/api/tasks")
+      ]);
+      
+      const statsData = statsRes.data || {};
+      const allEmployees = employeesRes.data || [];
+      const allTasks = tasksRes.data || [];
+      
+      // Calculate active employees (those with all tasks completed)
+      const activeEmployees = allEmployees.filter(emp => {
+        const employeeTasks = allTasks.filter(task => task.emp_code === emp.emp_code);
+        return employeeTasks.length > 0 && employeeTasks.every(task => task.status === 'Completed');
+      }).length;
+
+      // Update stats with consistent property names
       setStats({
-        totalEmployees: data.totalEmployees ?? data.total_employees ?? 0,
-        totalTasks: data.totalTasks ?? data.total_tasks ?? 0,
-        pendingTasks: data.pendingTasks ?? data.pending_tasks ?? 0,
+        totalEmployees: allEmployees.length,
+        totalTasks: allTasks.length,
+        pendingTasks: allTasks.filter(task => task.status === 'Pending').length,
+        activeEmployees: activeEmployees
       });
     } catch (err) {
       console.error("Error fetching stats:", err);
+      // Fallback to API stats if available, otherwise use 0
+      try {
+        const res = await axios.get("http://localhost:5000/api/dashboard-stats");
+        const data = res.data || {};
+        setStats({
+          totalEmployees: data.totalEmployees || data.total_employees || 0,
+          totalTasks: data.totalTasks || data.total_tasks || 0,
+          pendingTasks: data.pendingTasks || data.pending_tasks || 0,
+          activeEmployees: 0 // Fallback to 0 if we can't calculate
+        });
+      } catch (fallbackErr) {
+        console.error("Fallback stats fetch failed:", fallbackErr);
+        setStats({
+          totalEmployees: 0,
+          totalTasks: 0,
+          pendingTasks: 0,
+          activeEmployees: 0
+        });
+      }
     }
   };
 
@@ -293,24 +332,38 @@ export default function AdminDashboard() {
 
             {/* Dynamic Table Below Cards */}
             {filterCard === "totalEmployees" && (
-              <div className="employee-table-wrapper">
+              <div className="task-list-container">
                 <h3>All Employees</h3>
-                <table>
+                <table className="task-table">
                   <thead>
                     <tr>
-                      <th>S.No</th>
-                      <th>Employee Name (ID)</th>
+                      <th>ID</th>
+                      <th>Employee Name</th>
                       <th>Designation</th>
                       <th>Department</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {employees.map((emp, idx) => (
+                    {employees.map((emp, index) => (
                       <tr key={emp.id}>
-                        <td>{idx + 1}</td>
-                        <td>{emp.name} ({emp.emp_code})</td>
-                        <td>{emp.position}</td>
-                        <td>{emp.department}</td>
+                        <td>{index + 1}</td>
+                        <td>{emp.name}</td>
+                        <td>{emp.position || 'N/A'}</td>
+                        <td>
+                          <span style={{
+                            padding: '4px 12px',
+                            borderRadius: '12px',
+                            backgroundColor: '#e3f2fd',
+                            color: '#1976d2',
+                            fontSize: '0.85em',
+                            fontWeight: '500',
+                            display: 'inline-block',
+                            minWidth: '100px',
+                            textAlign: 'center'
+                          }}>
+                            {emp.department || 'N/A'}
+                          </span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -319,10 +372,25 @@ export default function AdminDashboard() {
             )}
             {filterCard === "totalTasks" && (
             <div className="tasks-wrapper">
-                <Task />
+                <Task  taskType="totalTasks"/>
+
                   </div>
                   )}</div>
                 )}
+            {filterCard === "pendingTasks" && (
+            <div className="tasks-wrapper">
+                <Task taskType="pendingTasks"/> 
+                  </div>
+                  )}
+            {filterCard === "activeEmployees" && (
+              <div className="active-employees-wrapper">
+              <Active />
+            
+          </div>   
+        )}
+                
+            
+                
 
         {/* Employees Section */}
         {activePage === "employees" && (
