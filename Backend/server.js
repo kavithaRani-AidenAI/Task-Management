@@ -4,90 +4,30 @@ import crypto from "crypto";
 import dotenv from "dotenv";
 import express from "express";
 import pg from "pg";
+import { pool } from "./db.js";
+import { config } from "./config.js";
 
 dotenv.config(); // Load environment variables from .env
 
-const { Pool } = pg;
+//const { Pool } = pg;
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
+app.use(express.json());
 app.use(bodyParser.json());
 
 // PostgreSQL connection
-const pool = new Pool({
-  connectionString:
-    "postgresql://neondb_owner:npg_4sGKRac7jDBY@ep-wandering-salad-adsv8ik7-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
-});
+// const pool = new Pool({
+//   connectionString:
+//     "postgresql://neondb_owner:npg_4sGKRac7jDBY@ep-wandering-salad-adsv8ik7-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
+// });
 
 // Utility: Hash password
 const hashPassword = (password) =>
   crypto.createHash("sha256").update(password).digest("hex");
-
-// ======================================
-// LOGIN
-// ======================================
-// app.post("/api/login", async (req, res) => {
-//   const { username, password } = req.body;
-
-//   try {
-//     if (!username || !password) {
-//       return res.status(400).json({ success: false, message: "Username and password are required" });
-//     }
-
-//     const usernamePattern = /^DS\d{3}$/;
-//     if (!usernamePattern.test(username)) {
-//       return res.status(400).json({ success: false, message: "Username must start with 'DS' followed by 3 digits" });
-//     }
-
-//     // Check admin table
-//     const adminResult = await pool.query(
-//       "SELECT id, username, password, role, created_at FROM admin WHERE username = $1",
-//       [username]
-//     );
-
-//     if (adminResult.rows.length === 0) {
-//       return res.status(400).json({ success: false, message: "User not found in admin table" });
-//     }
-
-//     const adminUser = adminResult.rows[0];
-
-//     if (adminUser.password !== password) {
-//       return res.status(400).json({ success: false, message: "Invalid password" });
-//     }
-
-//      // If employee role, fetch details
-//     if (adminUser.role.toLowerCase() === "employee") {
-//       const empResult = await pool.query(
-//         "SELECT emp_code, name, department FROM emp_details WHERE emp_code = $1",
-//         [username]
-//       );
-
-//       if (empResult.rows.length > 0) {
-//         const empUser = empResult.rows[0];
-//         userData = { ...userData, emp_code: empUser.emp_code, name: empUser.name, department: empUser.department };
-//       }
-//     }
-
-
-//     let userData = {
-//       id: adminUser.id,
-//       emp_code: adminUser.username, // 👈 Add this line
-//       username: adminUser.username,
-//       role: adminUser.role,
-//       name: empUser.name,
-//       created_at: adminUser.created_at,
-//     };
-
-   
-//     return res.json({ success: true, role: adminUser.role, user: userData });
-//   } catch (err) {
-//     console.error("Login error:", err);
-//     res.status(500).json({ success: false, message: "Server error" });
-//   }
-// });
 
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
@@ -427,6 +367,6 @@ pool.connect()
   .then(() => console.log("✅ Connected to PostgreSQL"))
   .catch((err) => console.error("DB connection error", err));
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+app.listen(config.server.port, () => {
+  console.log(`✅ Server running on port ${config.server.port}`);
 });
