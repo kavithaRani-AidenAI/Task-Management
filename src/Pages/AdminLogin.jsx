@@ -11,12 +11,14 @@ export default function AdminLogin() {
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [err, setErr] = useState("");
   const [usernameErr, setUsernameErr] = useState("");
+  const [passwordErr, setPasswordErr] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showMobileLogin, setShowMobileLogin] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [resendTime, setResendTime] = useState(30);
   const [otpSuccess, setOtpSuccess] = useState("");
+  const [loginDisabled, setLoginDisabled] = useState(false);
 
   const nav = useNavigate();
 
@@ -39,6 +41,7 @@ export default function AdminLogin() {
   useEffect(() => {
     setErr("");
     setUsernameErr("");
+    setPasswordErr("");
     setOtpSuccess("");
     setOtp(["", "", "", ""]);
     setOtpSent(false);
@@ -50,6 +53,7 @@ export default function AdminLogin() {
     setUsername(value);
     const usernamePattern = /^DS\d{3}$/;
     setUsernameErr(usernamePattern.test(value) ? "" : "Invalid username.");
+    setLoginDisabled(false); // re-enable on edit
   };
 
   const handleMobileChange = (e) => {
@@ -195,21 +199,29 @@ async function submit(e) {
   e.preventDefault();
   setErr("");
 
-  // Username validation
+  // Clear field errors
+  setUsernameErr("");
+  setPasswordErr("");
+  setErr("");
+
   const usernamePattern = /^DS\d{3}$/;
-  if (!usernamePattern.test(username)) {
-    setErr("Username must start with 'DS' ");
-    return;
-  }
+  const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-  if (!username || !password) {
-    setErr("Please enter both username and password");
-    return;
-  }
+  // Evaluate both validations without returning early so button click is honored
+  const usernameInvalid = !username || !usernamePattern.test(username);
+  const passwordInvalid = !password || !passwordPattern.test(password);
 
-  if (usernameErr) {
-    setErr("Please enter the correct username");
-    return;
+  if (usernameInvalid) setUsernameErr("Invalid username.");
+  if (passwordInvalid) setPasswordErr("Invalid password");
+
+  if (usernameInvalid && passwordInvalid) {
+    setLoginDisabled(true);
+    window.alert("Invalid username and password");
+    return; // both invalid -> field-level errors already shown
+  } else if (usernameInvalid) {
+    return; // username invalid -> field-level error shown
+  } else if (passwordInvalid) {
+    return; // password invalid -> field-level error shown
   }
 
   if (loading) return; // prevent duplicate submits
@@ -249,11 +261,23 @@ if (role === "admin") {
         if (user?.emp_code) {
           nav(`/employee-dashboard/${user.emp_code}`);
         } else setErr("Unknown role. Contact admin.");
-      } else setErr(data.message || "Login failed");
+      } else {
+        const msg = (data.message || '').toLowerCase();
+        if (msg.includes('user') && msg.includes('not')) {
+          setUsernameErr('Invalid username.');
+        } else {
+          setPasswordErr('Invalid password');
+        }
+      }
     }
     } catch (error) {
       console.error(error);
-      setErr(error?.response?.data?.message || "Server error");
+      const msg = (error?.response?.data?.message || '').toLowerCase();
+      if (msg.includes('user') && msg.includes('not')) {
+        setUsernameErr('Invalid username.');
+      } else {
+        setPasswordErr('Invalid password');
+      }
     } finally { setLoading(false); }
   }
 
@@ -310,11 +334,11 @@ if (role === "admin") {
 
                <div className="form-group">
                 <h4 className="heading">Password</h4>
-                 <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter password" required />
+                 <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => { setPassword(e.target.value); setPasswordErr(""); setLoginDisabled(false); }} placeholder="Enter password" required />
                  <div className="password-wrapper">
                  <button type="button" className="toggle-pass" onClick={() => setShowPassword(!showPassword)}>{showPassword ? "Hide" : "Show"}</button>
                  </div>
-                {err && <div className="error">{err}</div>}
+                {passwordErr && <div className="error">{passwordErr}</div>}
               </div>
               <div className="passwordpage">
                 <label className="checkrem">
@@ -326,8 +350,7 @@ if (role === "admin") {
                 </a>
               </div>
 
-              {/* {err && <div className="error">{err}</div>}*/}
-              <button className="btns" type="submit" disabled={loading}>{loading ? "Loading..." : "Login"}</button> 
+              <button className="btns" type="submit" disabled={loading || loginDisabled}>{loading ? "Loading..." : "Login"}</button> 
 
               {/* 👉 Forgot Password (only visible here) */}
              
