@@ -51,7 +51,7 @@
     display: flex;
     margin-left: 170px;
     height: 25px;
-    width: 20px;
+    /* width: 20px; */
         }
 
         .company-logo{
@@ -60,7 +60,7 @@
         }
         .company-name {
           color: black;
-          margin-left: 370px;
+          margin-left: 282px;
           font-size:22px;
           font-weight: bold;
           white-space: nowrap;
@@ -81,7 +81,7 @@
 .employee-info {
     align-items: center;
     text-align: center;
-    margin-left: 360px;
+    margin-left: 280px;
     font-size: 12px;
     font-weight: bold;
     color: #1e0ce9;

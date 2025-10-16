@@ -83,7 +83,7 @@
   background: white;
   z-index: 300;
   top:140px;
-  margin-top: 25px;
+  margin-top: 101px;
 }
 .calendar-day.disabled {
   opacity: 0.5;
