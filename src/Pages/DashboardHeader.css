@@ -1,32 +1,15 @@
-/* .header-container {
+.header-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: white;
+  background-color: white; /* Bootstrap blue */
   color:  #e0a800;
   padding: 10px 20px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   position: sticky;
   top: 0;
   z-index: 1000;
-} */
-
-.header-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;                /* make sure it spans across */
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: lightgrey;
-  color: #e0a800;
-  padding: 10px 20px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  z-index: 988;
 }
-
-
 
 .header-left {
   display: flex;

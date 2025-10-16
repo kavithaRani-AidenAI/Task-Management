@@ -438,10 +438,9 @@ export default function AdminDashboard() {
                 <option value="Finance">Finance</option>
               </select>
               <input type="text" name="position" placeholder="Enter position" value={form.position} onChange={handleChange} required disabled={isSubmitting} />
-              {/* <div className='form-group'>
+              <div className='form-group'>
                 <button type="submit" disabled={isSubmitting}>ADD</button>
-              </div> */}
-              <button type="submit" disabled={isSubmitting}>ADD</button>
+              </div>
             </form>
 
             <div className="table-header">  

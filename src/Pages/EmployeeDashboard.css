@@ -2,7 +2,7 @@
 .employee-dashboard-container {
   background-color: #dfd6d642;
   /* max-width: 1400px; */
-  margin: 67px auto;
+  margin: 20px auto;
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   position: relative; /* for absolute calendar positioning */
@@ -288,7 +288,7 @@ button:disabled {
 }
 
 .style{
-      margin-left:135px;
+      margin-left:60px;
     margin-bottom: 4px;
 }
 .sub-style{
@@ -645,12 +645,4 @@ text-align: left;
 .summary-card.active {
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
   transform: scale(1.05);
-}
-
-
-input {
-  margin-left: 175px;
-  padding:10px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
 }
