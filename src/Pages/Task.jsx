@@ -7,6 +7,7 @@ function Task(props) {
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [statuses, setStatuses] = useState([]); // ✅ NEW: Dynamic statuses
   
   // Filter state
   const [filter, setFilter] = useState({
@@ -26,8 +27,6 @@ function Task(props) {
     } else {
       fetchTasks();
     }
-    // Only fetch employees/projects if we actually render filters (currently hidden)
-    // Skipping these extra requests improves perceived load when opened from cards
   }, [props.tasks]);
 
   const fetchTasks = async () => {
@@ -40,20 +39,59 @@ function Task(props) {
     }
   };
 
-  // When used as a dedicated page with filters, populate dropdown data
+  // ✅ UPDATED: Cascading filters for Employee → Project → Status
   useEffect(() => {
     if (props.showFilters) {
+      // Always show all employees
       const uniqueEmployees = Array.from(new Set(tasks.map(t => t.emp_name))).filter(Boolean);
-      const uniqueProjects = Array.from(new Set(tasks.map(t => t.project))).filter(Boolean);
-      const uniqueStatuses = Array.from(new Set(tasks.map(t => t.status))).filter(Boolean);
       setEmployees(uniqueEmployees);
+
+      // Filter based on current selections
+      let relevantTasks = tasks;
+      
+      // Filter by employee if selected
+      if (filter.employee) {
+        relevantTasks = relevantTasks.filter(t => t.emp_name === filter.employee);
+      }
+      
+      // Get projects from filtered tasks
+      const uniqueProjects = Array.from(new Set(relevantTasks.map(t => t.project))).filter(Boolean);
       setProjects(uniqueProjects);
-      // ensure status values exist even if tasks are empty
-      if (uniqueStatuses.length === 0) {
-        // no-op, we'll render fixed list
+
+      // Filter by project if selected (further narrow down)
+      if (filter.project) {
+        relevantTasks = relevantTasks.filter(t => t.project === filter.project);
+      }
+
+      // Get statuses from the most filtered tasks
+      const uniqueStatuses = Array.from(new Set(relevantTasks.map(t => t.status))).filter(Boolean);
+      setStatuses(uniqueStatuses);
+    }
+  }, [props.showFilters, tasks, filter.employee, filter.project]); // ✅ Added filter.project as dependency
+
+  // ✅ UPDATED: Auto-reset project and status filters if they become invalid
+  useEffect(() => {
+    if (filter.employee) {
+      const employeeTasks = tasks.filter(t => t.emp_name === filter.employee);
+      const availableProjects = Array.from(new Set(employeeTasks.map(t => t.project))).filter(Boolean);
+      
+      // Reset project if it's not available for selected employee
+      if (filter.project && !availableProjects.includes(filter.project)) {
+        setFilter(prev => ({ ...prev, project: "", status: "" }));
+        return;
+      }
+
+      // Reset status if it's not available for selected employee + project
+      if (filter.project && filter.status) {
+        const projectTasks = employeeTasks.filter(t => t.project === filter.project);
+        const availableStatuses = Array.from(new Set(projectTasks.map(t => t.status))).filter(Boolean);
+        
+        if (!availableStatuses.includes(filter.status)) {
+          setFilter(prev => ({ ...prev, status: "" }));
+        }
       }
     }
-  }, [props.showFilters, tasks]);
+  }, [filter.employee, filter.project, tasks]);
 
   // Filter tasks based on employee, project, and search
   useEffect(() => {
@@ -114,8 +152,10 @@ function Task(props) {
       hour12: true
     });
   };
+
   const pendingTasks = tasks.filter(task => task.status === "Pending");
   const completedTasks = tasks.filter(task => task.status === "Completed");
+  
   // Decide which tasks to show
   const displayedTasks = props.taskType === "pendingTasks"
     ? pendingTasks
@@ -152,9 +192,9 @@ function Task(props) {
             </select>
             <select value={filter.status} onChange={e => setFilter({ ...filter, status: e.target.value })}>
               <option value="">Filter by Status</option>
-              <option value="Pending">Pending</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Completed">Completed</option>
+              {statuses.map(status => (
+                <option key={status} value={status}>{status}</option>
+              ))}
             </select>
             <input type="date" value={filter.fromDate} onChange={e => setFilter({ ...filter, fromDate: e.target.value })} />
             <input type="date" value={filter.toDate} onChange={e => setFilter({ ...filter, toDate: e.target.value })} />

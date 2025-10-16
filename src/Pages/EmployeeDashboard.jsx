@@ -1,3 +1,4 @@
+//employee dashboard
 import "../App.css";
 import "./EmployeeDashboard.css";
 import * as XLSX from "xlsx";
@@ -352,7 +353,7 @@ function EmployeeDashboard() {
       <DashboardHeader currentUser={emp} />
 
       <div className="employee-dashboard-container">
-        <button className="back-btn" onClick={() => navigate('/admin-dashboard')}>← Back</button>
+        <button className="back-btn" onClick={() => (isAdminView ? navigate('/admin-dashboard') : navigate(-1))}>← Back</button>
 
         {/* Top row: Task Summary + Calendar */}
         <div className="top-row">

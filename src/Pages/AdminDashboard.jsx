@@ -337,13 +337,13 @@ export default function AdminDashboard() {
 
             {filterCard === "totalTasks" && (
               <div className="tasks-wrapper">
-                <Task taskType="totalTasks" tasks={tasks} />
+                <Task taskType="totalTasks" tasks={tasks} showFilters={true} />
               </div>
             )}
 
             {filterCard === "pendingTasks" && (
               <div className="tasks-wrapper">
-                <Task taskType="pendingTasks" tasks={tasks} /> 
+                <Task taskType="pendingTasks" tasks={tasks}  /> 
               </div>
             )}
 
