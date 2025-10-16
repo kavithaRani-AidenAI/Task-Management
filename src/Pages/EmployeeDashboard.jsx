@@ -1,3 +1,4 @@
+//employee dashboard
 import "../App.css";
 import "./EmployeeDashboard.css";
 import * as XLSX from "xlsx";
@@ -107,15 +108,25 @@ function EmployeeDashboard() {
 
       let filtered = [];
 
-      if (empStorage && empStorage.emp_code) {
+      if (isAdminView) {
+        // If admin selected a specific employee, show that employee's tasks
+        if (selectedEmpCode) {
+          filtered = allTasks.filter(
+            (task) => task.emp_code?.toUpperCase() === selectedEmpCode.toUpperCase()
+          );
+        } else if (admStorage) {
+          const adminCode = (admStorage.emp_code || "").toUpperCase();
+          const adminUser = (admStorage.username || "").toUpperCase();
+          filtered = allTasks.filter((task) => {
+            const from = (task.assigned_from || "").toUpperCase();
+            return from === adminCode || from === adminUser;
+          });
+        }
+      } else if (empStorage && empStorage.emp_code) {
         filtered = allTasks.filter(
           (task) =>
             task.emp_code?.toUpperCase() === empStorage.emp_code.toUpperCase() ||
             task.assigned_from?.toUpperCase() === empStorage.emp_code.toUpperCase()
-        );
-      } else if (admStorage && admStorage.username) {
-        filtered = allTasks.filter(
-          (task) => task.assigned_from?.toUpperCase() === admStorage.username.toUpperCase()
         );
       }
 
@@ -156,6 +167,14 @@ function EmployeeDashboard() {
     fetchProjects();
     if (empCode) fetchTasks();
   }, [empCode]);
+
+  // Refresh tasks when admin changes selected employee filter
+  useEffect(() => {
+    if (isAdminView) {
+      fetchTasks();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedEmpCode]);
 
   // Filter tasks by selected date (IST)
   useEffect(() => {
@@ -313,6 +332,10 @@ function EmployeeDashboard() {
       <DashboardHeader currentUser={emp} />
 
       <div className="employee-dashboard-container">
+<<<<<<< HEAD
+=======
+        <button className="back-btn" onClick={() => (isAdminView ? navigate('/admin-dashboard') : navigate(-1))}>← Back</button>
+>>>>>>> 4112264134e441453aa98281c2897b894eec8558
 
         {/* Top row: Task Summary + Calendar */}
         <div className="top-row">
