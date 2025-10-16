@@ -254,6 +254,7 @@ export default function AdminDashboard() {
             <button onClick={showEmployees}>Manage Employees</button>
             <button onClick={showTasks}>Assign Tasks</button>
             <button onClick={() => navigate('/employee-dashboard/admin')}>View Employee Dashboard</button>
+            <button onClick={() => navigate('/report')}>Report</button>
           </div>
         </div>
   

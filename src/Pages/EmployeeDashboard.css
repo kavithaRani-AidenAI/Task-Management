@@ -316,6 +316,12 @@ textarea {
   min-height: 80px;
 }
 
+/* Ensure Submodule input remains clickable in admin view */
+.form-container input[name="submodule"] {
+  position: relative;
+  z-index: 401; /* above .calendar-section (300) */
+}
+
 /* Submit button */
 .form-actions {
   display: flex;
