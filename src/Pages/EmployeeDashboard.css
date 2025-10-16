@@ -229,7 +229,7 @@ button:disabled {
 }
 
 .form-container {
-  width: 1200px;
+  width: 1044px;
   padding: 25px;
   background: white;
   border-radius: 12px;
@@ -525,7 +525,7 @@ text-align: left;
 .task-list-containers {
     margin: 2rem 0 2rem 0rem;
     padding: 1.5rem;
-    width: 1465px;
+    width: 1318px;
     max-width: none;
     background: #e2edf1;
     border-radius: 12px;
@@ -596,7 +596,7 @@ text-align: left;
   display: flex;
   justify-content: center; /* center horizontally */
   align-items: center;
-  gap: 55px; /* space between cards */
+  gap: 33px; /* space between cards */
   width:fit-content;
   margin: 25px auto;
   width: 100%;
