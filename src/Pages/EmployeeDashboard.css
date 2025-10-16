@@ -83,7 +83,7 @@
   background: white;
   z-index: 300;
   top:140px;
-  margin-top: 101px;
+  margin-top: 25px;
 }
 .calendar-day.disabled {
   opacity: 0.5;
@@ -229,7 +229,7 @@ button:disabled {
 }
 
 .form-container {
-  width: 1044px;
+  width: 1200px;
   padding: 25px;
   background: white;
   border-radius: 12px;
@@ -314,12 +314,6 @@ button:disabled {
 textarea {
   resize: vertical;
   min-height: 80px;
-}
-
-/* Ensure Submodule input remains clickable in admin view */
-.form-container input[name="submodule"] {
-  position: relative;
-  z-index: 401; /* above .calendar-section (300) */
 }
 
 /* Submit button */
@@ -531,7 +525,7 @@ text-align: left;
 .task-list-containers {
     margin: 2rem 0 2rem 0rem;
     padding: 1.5rem;
-    width: 1318px;
+    width: 1465px;
     max-width: none;
     background: #e2edf1;
     border-radius: 12px;
@@ -602,7 +596,7 @@ text-align: left;
   display: flex;
   justify-content: center; /* center horizontally */
   align-items: center;
-  gap: 33px; /* space between cards */
+  gap: 55px; /* space between cards */
   width:fit-content;
   margin: 25px auto;
   width: 100%;

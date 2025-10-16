@@ -12,7 +12,6 @@ function EmployeeDashboard() {
   const navigate = useNavigate();
   const { empCode } = useParams();
   const API_BASE = "http://localhost:5000/api";
-  const isAdminView = empCode === "admin" || !!JSON.parse(localStorage.getItem("admin"));
 
   // Timezone helpers (IST)
   const TZ = "Asia/Kolkata";
@@ -38,8 +37,6 @@ function EmployeeDashboard() {
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [employees, setEmployees] = useState([]);
-  const [selectedEmpCode, setSelectedEmpCode] = useState("");
   const [completedDates, setCompletedDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState(formatISTDate(new Date()));
   const [showPopup, setShowPopup] = useState(false);
@@ -139,19 +136,10 @@ function EmployeeDashboard() {
     }
   };
 
-  // Fetch employees (only for admin view)
-  const fetchEmployees = async () => {
-    try {
-      const res = await axios.get(`${API_BASE}/emp_details`);
-      setEmployees(res.data || []);
-    } catch (err) {
-      console.error("Error fetching employees:", err);
-    }
-  };
-
-  // Fetch employee details (skip for generic admin view)
+  // Fetch employee details
   useEffect(() => {
-    if (!empCode || isAdminView) return;
+    if (!empCode) return;
+
     const fetchEmployeeDetails = async () => {
       try {
         const res = await axios.get(`${API_BASE}/employees/${empCode}`);
@@ -161,13 +149,12 @@ function EmployeeDashboard() {
       }
     };
     fetchEmployeeDetails();
-  }, [empCode, isAdminView]);
+  }, [empCode]);
 
   // Initial fetch
   useEffect(() => {
     fetchProjects();
     if (empCode) fetchTasks();
-    if (isAdminView) fetchEmployees();
   }, [empCode]);
 
   // Filter tasks by selected date (IST)
@@ -191,15 +178,8 @@ function EmployeeDashboard() {
     const employee = JSON.parse(localStorage.getItem("employee"));
     const assignedFrom = admin?.emp_code || employee?.emp_code || "self";
 
-    const targetEmpCode = isAdminView ? selectedEmpCode : empCode;
-    if (isAdminView && !targetEmpCode) {
-      alert("Please select an employee to assign the task.");
-      setSubmitting(false);
-      return;
-    }
-
     const payload = {
-      emp_code: targetEmpCode,
+      emp_code: empCode,
       project: form.project,
       module: form.module,
       submodule: form.submodule,
@@ -214,7 +194,6 @@ function EmployeeDashboard() {
       await axios.post(`${API_BASE}/tasks`, payload);
       setSuccess(true);
       setForm({ emp_code: "", project: "", module: "", submodule: "", task_details: "" });
-      if (isAdminView) setSelectedEmpCode("");
       setTimeout(() => setSuccess(false), 2500);
       fetchTasks();
     } catch (err) {
@@ -334,7 +313,6 @@ function EmployeeDashboard() {
       <DashboardHeader currentUser={emp} />
 
       <div className="employee-dashboard-container">
-        <button className="back-btn" onClick={() => navigate('/admin-dashboard')}>← Back</button>
 
         {/* Top row: Task Summary + Calendar */}
         <div className="top-row">
@@ -447,17 +425,6 @@ function EmployeeDashboard() {
             <h3>Add Report</h3>
             <form className="task-form" onSubmit={handleSubmit}>
               <div className="form-row">
-                {isAdminView && (
-                  <div className="form-group">
-                    <h5 className="style">Employee:</h5>
-                    <select name="emp_code" value={selectedEmpCode} onChange={(e) => setSelectedEmpCode(e.target.value)} required>
-                      <option value="">-- Select Employee --</option>
-                      {employees.map((em) => (
-                        <option key={em.emp_code || em.id} value={em.emp_code}>{em.name} ({em.emp_code})</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
                 <div className="form-group">
                   <h5 className="style">Project:</h5>
                   <select name="project" value={form.project} onChange={handleChange} required>

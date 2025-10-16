@@ -12,9 +12,6 @@ function Task(props) {
   const [filter, setFilter] = useState({
     employee: "",
     project: "",
-    status: "",
-    fromDate: "",
-    toDate: "",
     search: ""
   });
 
@@ -40,20 +37,9 @@ function Task(props) {
     }
   };
 
-  // When used as a dedicated page with filters, populate dropdown data
-  useEffect(() => {
-    if (props.showFilters) {
-      const uniqueEmployees = Array.from(new Set(tasks.map(t => t.emp_name))).filter(Boolean);
-      const uniqueProjects = Array.from(new Set(tasks.map(t => t.project))).filter(Boolean);
-      const uniqueStatuses = Array.from(new Set(tasks.map(t => t.status))).filter(Boolean);
-      setEmployees(uniqueEmployees);
-      setProjects(uniqueProjects);
-      // ensure status values exist even if tasks are empty
-      if (uniqueStatuses.length === 0) {
-        // no-op, we'll render fixed list
-      }
-    }
-  }, [props.showFilters, tasks]);
+  // Note: employees and projects fetching is disabled to avoid delays when opening from cards
+  const fetchEmployees = async () => {};
+  const fetchProjects = async () => {};
 
   // Filter tasks based on employee, project, and search
   useEffect(() => {
@@ -74,26 +60,6 @@ function Task(props) {
           t.module?.toLowerCase().includes(filter.search.toLowerCase()) ||
           t.submodule?.toLowerCase().includes(filter.search.toLowerCase())
       );
-    }
-
-    if (filter.status) {
-      result = result.filter(t => (t.status || "").toLowerCase() === filter.status.toLowerCase());
-    }
-
-    if (filter.fromDate || filter.toDate) {
-      const from = filter.fromDate ? new Date(filter.fromDate) : null;
-      const to = filter.toDate ? new Date(filter.toDate) : null;
-      result = result.filter(t => {
-        if (!t.created_at) return false;
-        const created = new Date(t.created_at);
-        // convert to IST date-only string for inclusive comparison
-        const ist = new Date(created.getTime() + 5.5 * 60 * 60 * 1000);
-        const ymd = ist.toISOString().slice(0,10);
-        const current = new Date(ymd + "T00:00:00Z");
-        if (from && current < new Date(new Date(filter.fromDate).toISOString().slice(0,10) + "T00:00:00Z")) return false;
-        if (to && current > new Date(new Date(filter.toDate).toISOString().slice(0,10) + "T00:00:00Z")) return false;
-        return true;
-      });
     }
 
     setFilteredTasks(result);
@@ -123,45 +89,16 @@ function Task(props) {
       ? completedTasks
       : filteredTasks;
 
-  // Notify parent about the current displayed list (for export)
-  useEffect(() => {
-    if (typeof props.onFilteredChange === "function") {
-      props.onFilteredChange(displayedTasks);
-    }
-  }, [displayedTasks, props]);
-
   return (
     <div className="task-list-container">
       <h2>{props.taskType === "pendingTasks" ? "Pending Tasks" : props.taskType === "completedTasks" ? "Completed Tasks" : "All Tasks"}</h2>
 
       {/* Filters */}
       <div className="filters">
-        {props.showFilters && (
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10, alignItems: "center" }}>
-            <select value={filter.employee} onChange={e => setFilter({ ...filter, employee: e.target.value })}>
-              <option value="">Filter by Name</option>
-              {employees.map(name => (
-                <option key={name} value={name}>{name}</option>
-              ))}
-            </select>
-            <select value={filter.project} onChange={e => setFilter({ ...filter, project: e.target.value })}>
-              <option value="">Filter by Project</option>
-              {projects.map(project => (
-                <option key={project} value={project}>{project}</option>
-              ))}
-            </select>
-            <select value={filter.status} onChange={e => setFilter({ ...filter, status: e.target.value })}>
-              <option value="">Filter by Status</option>
-              <option value="Pending">Pending</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Completed">Completed</option>
-            </select>
-            <input type="date" value={filter.fromDate} onChange={e => setFilter({ ...filter, fromDate: e.target.value })} />
-            <input type="date" value={filter.toDate} onChange={e => setFilter({ ...filter, toDate: e.target.value })} />
-            <input type="text" placeholder="Search task/module/submodule" value={filter.search} onChange={e => setFilter({ ...filter, search: e.target.value })} />
-            <button onClick={() => setFilter({ employee: "", project: "", status: "", fromDate: "", toDate: "", search: "" })}>Clear</button>
-          </div>
-        )}
+        
+
+        
+        
       </div>
 
       {/* Tasks Table */}

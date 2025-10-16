@@ -4,7 +4,6 @@ import EmployeeDashboard from "./Pages/EmployeeDashboard";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import TaskAssignForm from "./Pages/TaskAssignForm";
 import Task from "./Pages/Task";
-import Report from "./Pages/Report";
 
 
 function App() {
@@ -13,8 +12,7 @@ function App() {
     <Routes>
         {/* Admin login page */}
        <Route path="/" element={<AdminLogin />} />
-       <Route path="/admin-dashboard" element={<AdminDashboard />} />
-       <Route path="/report" element={<Report />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
          <Route path="/employee-dashboard/:empCode" element={<EmployeeDashboard />} />       
           <Route path="/assign-task" element={<TaskAssignForm />} />
       </Routes>
