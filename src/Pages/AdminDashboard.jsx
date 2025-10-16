@@ -10,7 +10,6 @@ import { saveAs } from "file-saver";
 import { useNavigate } from "react-router-dom";
 import Task from "./Task";
 import Active from "./Active";
-import EmployeeDashboard from "./EmployeeDashboard";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -254,7 +253,8 @@ export default function AdminDashboard() {
           <div>
             <button onClick={showEmployees}>Manage Employees</button>
             <button onClick={showTasks}>Assign Tasks</button>
-            <button onClick={() => setActivePage("employeeDashboard")}>View Employee Dashboard</button>
+            <button onClick={() => navigate('/employee-dashboard/admin')}>View Employee Dashboard</button>
+            <button onClick={() => navigate('/report')}>Report</button>
           </div>
         </div>
   
@@ -429,16 +429,6 @@ export default function AdminDashboard() {
               tasks={tasks}
             />
           </>
-        )}
-
-        {/* Employee Dashboard Section - FIXED: Moved outside employees section */}
-        {activePage === "employeeDashboard" && (
-          <div>
-            <button className="back-btn" onClick={() => setActivePage("dashboard")}>
-              ← Back to Admin Dashboard
-            </button>
-            <EmployeeDashboard />
-          </div>
         )}
 
         {successMessage && <div className="success-popup">{successMessage}</div>}
