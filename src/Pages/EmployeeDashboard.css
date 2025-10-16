@@ -2,7 +2,7 @@
 .employee-dashboard-container {
   background-color: #dfd6d642;
   /* max-width: 1400px; */
-  margin: 20px auto;
+  margin: 67px auto;
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   position: relative; /* for absolute calendar positioning */
@@ -83,7 +83,7 @@
   background: white;
   z-index: 300;
   top:140px;
-  margin-top: 25px;
+  margin-top: 101px;
 }
 .calendar-day.disabled {
   opacity: 0.5;
@@ -229,7 +229,7 @@ button:disabled {
 }
 
 .form-container {
-  width: 1200px;
+  width: 1044px;
   padding: 25px;
   background: white;
   border-radius: 12px;
@@ -288,7 +288,7 @@ button:disabled {
 }
 
 .style{
-      margin-left:60px;
+      margin-left:135px;
     margin-bottom: 4px;
 }
 .sub-style{
@@ -531,7 +531,7 @@ text-align: left;
 .task-list-containers {
     margin: 2rem 0 2rem 0rem;
     padding: 1.5rem;
-    width: 1465px;
+    width: 1318px;
     max-width: none;
     background: #e2edf1;
     border-radius: 12px;
@@ -602,7 +602,7 @@ text-align: left;
   display: flex;
   justify-content: center; /* center horizontally */
   align-items: center;
-  gap: 55px; /* space between cards */
+  gap: 33px; /* space between cards */
   width:fit-content;
   margin: 25px auto;
   width: 100%;
@@ -651,4 +651,12 @@ text-align: left;
 .summary-card.active {
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
   transform: scale(1.05);
+}
+
+
+input {
+  margin-left: 175px;
+  padding:10px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
 }

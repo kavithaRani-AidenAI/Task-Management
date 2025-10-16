@@ -188,6 +188,15 @@
              
         }
 
+ .headers, .footers {
+  background:rgb(6, 6, 121);
+  color: #fff;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
         /* Mobile Responsive */
         @media (max-width: 768px) {
             .header-content {
