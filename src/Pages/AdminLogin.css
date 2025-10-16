@@ -329,7 +329,7 @@
  
     /* header and footer */
 .headers, .footers {
-  background:rgb(6, 6, 121);
+  background:lightgrey;
   color: #fff;
   padding: 15px 20px;
   display: flex;
